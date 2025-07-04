@@ -1,54 +1,90 @@
-import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 export default function ProjectDetail() {
   const { projectId } = useParams();
+  const navigate = useNavigate();
   const [project, setProject] = useState(null);
   const [quests, setQuests] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProject = async () => {
+    const fetchProjectAndQuests = async () => {
       try {
-        const res = await fetch(`https://glaria-api.onrender.com/projects/${projectId}`);
-        const data = await res.json();
+        // Fetch project details
+        const projectRes = await fetch(`https://glaria-api.onrender.com/projects/${projectId}`);
+        const projectData = await projectRes.json();
 
         setProject({
-          ...data,
-          logo: "/logo.png", // Replace with dynamic logo if your backend supports it
-          totalXp: 70, // Set to real value when available
-          socials: {
-            twitter: data.twitter_url,
-            telegram: data.telegram_url,
-            discord: data.discord_url,
-          }
+          ...projectData,
+          logo: projectData.image_url || "/fallback.png",
+          totalXp: 70, // Temporary until real XP data is available
         });
 
-        // TODO: Fetch quests for the project (use real API if available)
-        setQuests([
-          {
-            id: 1,
-            description: "Complete the onboarding quest",
-            xp: 20,
-            projectName: data.name,
-            projectLogo: "/logo.png",
-          },
-          {
-            id: 2,
-            description: "Join the Discord and say hi",
-            xp: 10,
-            projectName: data.name,
-            projectLogo: "/logo.png",
-          },
-        ]);
+        // Fetch quests by project id
+        const questsRes = await fetch(`https://glaria-api.onrender.com/api/quests/by-project/${projectId}`);
+        if (!questsRes.ok) throw new Error("Failed to fetch quests");
+        const questsData = await questsRes.json();
 
+        // Map quests for display
+        const mappedQuests = questsData.map(q => ({
+          id: q.id,
+          description: q.title,
+          xp: q.points,
+          projectName: projectData.name,
+          projectLogo: projectData.image_url || "/fallback.png",
+        }));
+
+        setQuests(mappedQuests);
       } catch (err) {
-        console.error("Failed to fetch project:", err);
+        console.error("Failed to fetch project or quests:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchProject();
+    fetchProjectAndQuests();
   }, [projectId]);
 
+  if (loading) {
+  return (
+    <div className="w-full px-10 py-10 bg-white/30 backdrop-blur-md rounded-3xl border border-white/40 shadow-lg max-w-5xl mx-auto mt-12 animate-pulse">
+      {/* Project Header Skeleton */}
+      <div className="flex flex-col items-center justify-center bg-white/20 backdrop-blur-lg p-6 rounded-[2rem] shadow mb-8">
+        <div className="w-20 h-20 rounded-full bg-gray-300 mb-4" />
+        <div className="h-8 w-48 bg-gray-300 rounded mb-2" />
+        <div className="h-4 w-72 bg-gray-300 rounded mb-4" />
+        <div className="mt-4 w-full max-w-sm bg-gray-300 rounded-full h-4" />
+      </div>
+
+      {/* Social Links Skeleton */}
+      <div className="flex gap-4 mt-6 justify-center">
+        {[1, 2, 3].map((_, i) => (
+          <div key={i} className="w-20 h-8 rounded-full bg-gray-300" />
+        ))}
+      </div>
+
+      {/* Quests Skeleton */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-10">
+        {[1, 2, 3, 4, 5, 6].map((_, i) => (
+          <div
+            key={i}
+            className="aspect-[4/3] rounded-xl bg-gray-300 p-6 flex flex-col justify-between"
+          >
+            <div className="h-6 rounded bg-gray-400 w-3/4 mb-6" />
+            <div className="flex justify-between items-end mt-4">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-gray-400" />
+                <div className="h-4 w-20 rounded bg-gray-400" />
+              </div>
+              <div className="h-5 w-10 rounded bg-gray-400" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
   if (!project) return null;
 
   return (
@@ -71,9 +107,9 @@ export default function ProjectDetail() {
 
         {/* Social Links */}
         <div className="flex gap-4 mt-6">
-          {project.socials.twitter && (
+          {project.twitter_url && (
             <a
-              href={project.socials.twitter}
+              href={project.twitter_url}
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2 rounded-full bg-white/30 backdrop-blur-md border border-white/40 hover:bg-white/50 transition text-sm font-medium"
@@ -81,9 +117,9 @@ export default function ProjectDetail() {
               Twitter
             </a>
           )}
-          {project.socials.telegram && (
+          {project.telegram_url && (
             <a
-              href={project.socials.telegram}
+              href={project.telegram_url}
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2 rounded-full bg-white/30 backdrop-blur-md border border-white/40 hover:bg-white/50 transition text-sm font-medium"
@@ -91,9 +127,9 @@ export default function ProjectDetail() {
               Telegram
             </a>
           )}
-          {project.socials.discord && (
+          {project.discord_url && (
             <a
-              href={project.socials.discord}
+              href={project.discord_url}
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2 rounded-full bg-white/30 backdrop-blur-md border border-white/40 hover:bg-white/50 transition text-sm font-medium"
@@ -109,6 +145,7 @@ export default function ProjectDetail() {
         {quests.map((quest) => (
           <div
             key={quest.id}
+            onClick={() => navigate(`/quests/${quest.id}`)}
             className="aspect-[4/3] rounded-xl bg-white/50 border border-white/30 shadow-inner p-6 flex flex-col justify-between hover:scale-[1.02] transition duration-300 ease-in-out cursor-pointer"
           >
             <p className="text-xl font-semibold text-gray-800 leading-snug">

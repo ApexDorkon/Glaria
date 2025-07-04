@@ -31,7 +31,7 @@ export default function QuestsPage() {
               projectMap[id] = project;
             } catch (err) {
               console.error(`Failed to fetch project ${id}`, err);
-              projectMap[id] = { name: "Unknown", logo: "/logo.png" };
+              projectMap[id] = { name: "Unknown", image_url: "/fallback.png" };
             }
           })
         );
@@ -43,7 +43,7 @@ export default function QuestsPage() {
           projectId: q.project_id,
           projectName: projectMap[q.project_id]?.name || "Unknown",
           project: projectMap[q.project_id],
-          projectLogo: "/logo.png",
+          projectLogo: projectMap[q.project_id]?.image_url || "/fallback.png",
           xp: q.points,
           createdAt: q.created_at || new Date().toISOString(),
         }));
@@ -125,7 +125,7 @@ export default function QuestsPage() {
                     hoverTimeoutRef.current = setTimeout(() => {
                       setHoverPosition({ x, y });
                       setHoveredProject(quest.project);
-                    }, 500); // 500ms delay
+                    }, 500);
                   }}
                   onMouseLeave={() => {
                     clearTimeout(hoverTimeoutRef.current);
@@ -176,7 +176,7 @@ export default function QuestsPage() {
         >
           <div className="flex flex-col items-center text-center text-gray-900">
             <img
-              src="/logo.png"
+              src={hoveredProject.image_url || "/fallback.png"}
               alt={hoveredProject.name}
               className="w-16 h-16 rounded-full mb-3 shadow-md"
             />

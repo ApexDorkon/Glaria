@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import CreateProjectModal from "../../components/CreateProjectModal";
 
 export default function ProjectsPage() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -12,15 +14,14 @@ export default function ProjectsPage() {
         const res = await fetch("https://glaria-api.onrender.com/projects/");
         const data = await res.json();
 
-        // Optional: simulate delay
         setTimeout(() => {
           setProjects(
             data.map((p) => ({
               id: p.id,
               name: p.name,
               description: p.description,
-              logo: "/logo.png", // Use a real logo field if available
-              xp: Math.floor(Math.random() * 100), // Placeholder XP
+              logo: p.image_url || "/fallback.png",
+              xp: Math.floor(Math.random() * 100),
             }))
           );
           setLoading(false);
@@ -67,7 +68,7 @@ export default function ProjectsPage() {
                   <img
                     src={project.logo}
                     alt={project.name}
-                    className="w-12 h-12 rounded-full border border-white shadow"
+                    className="w-12 h-12 rounded-full border border-white shadow object-cover"
                   />
                   <h3 className="text-xl font-semibold text-gray-900">
                     {project.name}
@@ -98,12 +99,14 @@ export default function ProjectsPage() {
           Launch your project, create quests, and connect with engaged users on the Sophon ecosystem.
         </p>
         <button
-          onClick={() => navigate("/create-project")}
+          onClick={() => setShowCreateModal(true)}
           className="px-6 py-3 rounded-full bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-700 transition"
         >
           + Create Your Project
         </button>
       </div>
+
+      {showCreateModal && <CreateProjectModal onClose={() => setShowCreateModal(false)} />}
     </div>
   );
 }

@@ -10,35 +10,25 @@ export default function Layout({ children }) {
   const [showSignupModal, setShowSignupModal] = useState(false);
   const [twitterUser, setTwitterUser] = useState(null);
 
-  // ✅ Load access_token on first mount
+  // ✅ Load token on mount
   useEffect(() => {
-    const storedToken = localStorage.getItem("access_token");
-    console.log("🔄 Restoring token:", storedToken);
-    if (storedToken) {
-      setIsAuthenticated(true);
-    }
+    const token = localStorage.getItem("access_token");
+    if (token) setIsAuthenticated(true);
   }, []);
-useEffect(() => {
-  const token = localStorage.getItem("access_token");
-  if (token) {
-    setIsAuthenticated(true);
-  }
-}, []);
-  // ✅ Handle Twitter OAuth redirect
+
+  // ✅ Handle Twitter OAuth
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
     const state = urlParams.get("state");
 
     if (code && state) {
-      // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
 
       const completeTwitterLogin = async () => {
         try {
           const res = await fetch(`https://glaria-api.onrender.com/auth/twitter/callback?code=${code}&state=${state}`);
           const data = await res.json();
-          console.log("🐦 Twitter login response:", data);
 
           if (!data || !data.twitter_user || !data.access_token) {
             alert("Twitter login failed.");
@@ -47,19 +37,13 @@ useEffect(() => {
 
           const { twitter_user, userExists, access_token } = data;
 
-          // ✅ Store token and mark as authenticated
           localStorage.setItem("access_token", access_token);
-          console.log("✅ Stored token:", access_token);
           setIsAuthenticated(true);
           setTwitterUser(twitter_user);
 
-          // ✅ Delay navigation slightly to ensure token is stored
           setTimeout(() => {
-            if (userExists) {
-              navigate("/profile");
-            } else {
-              setShowSignupModal(true);
-            }
+            if (userExists) navigate("/profile");
+            else setShowSignupModal(true);
           }, 150);
         } catch (err) {
           console.error("Twitter login error:", err);
@@ -90,15 +74,11 @@ useEffect(() => {
       });
 
       const data = await res.json();
-
-      if (!res.ok || !data.access_token) {
-        throw new Error("Failed to create profile or missing token");
-      }
+      if (!res.ok || !data.access_token) throw new Error("Signup failed");
 
       localStorage.setItem("access_token", data.access_token);
       setIsAuthenticated(true);
       setShowSignupModal(false);
-      console.log("✅ Signed up and stored token:", data.access_token);
       navigate("/profile");
     } catch (err) {
       console.error("Signup failed:", err);

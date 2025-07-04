@@ -1,7 +1,7 @@
 import glassMan from "../../assets/glassMan.png";
 import React, { useEffect, useState } from "react";
 import CreateProfile from "./CreateProfile";
-
+import GlariaQuests from "../Quests/GlariaQuests";
 export default function Profile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -110,7 +110,7 @@ export default function Profile() {
             </div>
           </div>
         </div>
-
+<GlariaQuests />
         {/* Connect Buttons Container */}
         <div className="w-full rounded-3xl bg-white/10 backdrop-blur-lg border border-white/50 shadow-2xl p-6 flex flex-col items-center gap-4">
           {user.twitter_username ? (
