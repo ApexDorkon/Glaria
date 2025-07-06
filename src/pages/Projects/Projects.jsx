@@ -40,7 +40,8 @@ export default function ProjectsPage() {
       <h2 className="text-2xl font-bold mb-8">Explore Projects</h2>
 
       {/* Project Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-12">
+      {/* Changed grid-cols-1 to grid-cols-2 for mobile, keep md:grid-cols-3 */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-12">
         {loading
           ? [...Array(6)].map((_, i) => (
               <div
@@ -77,11 +78,20 @@ export default function ProjectsPage() {
                 <p className="text-sm text-gray-700 mb-6 leading-relaxed">
                   {project.description}
                 </p>
-                <div className="w-full h-3 rounded-full bg-white/40 overflow-hidden">
+                <div className="mt-4 w-full max-w-sm bg-white/40 backdrop-blur-lg rounded-full overflow-hidden border border-white/30 shadow relative h-3">
                   <div
-                    className="h-3 bg-indigo-500 rounded-full transition-all duration-300"
-                    style={{ width: `${project.xp}%` }}
-                  />
+                    className="h-3 rounded-full relative transition-all duration-1500 ease-in-out shadow-[0_0_10px_#6366f1]"
+                    style={{
+                      width: `${project.xp}%`,
+                      background:
+                        "linear-gradient(270deg, #4f46e5, #818cf8, #4f46e5)",
+                      backgroundSize: "600% 600%",
+                      animation: "gradientShift 8s ease infinite",
+                    }}
+                  >
+                    {/* Shimmer effect */}
+                    <div className="absolute top-0 left-0 h-full w-20 bg-white/20 rounded-full animate-shimmer" />
+                  </div>
                 </div>
                 <p className="mt-2 text-right text-xs font-medium text-gray-600">
                   {project.xp}% XP earned
@@ -96,7 +106,8 @@ export default function ProjectsPage() {
           Are you a Project Founder?
         </h3>
         <p className="text-gray-700 mb-4">
-          Launch your project, create quests, and connect with engaged users on the Sophon ecosystem.
+          Launch your project, create quests, and connect with engaged users on
+          the Sophon ecosystem.
         </p>
         <button
           onClick={() => setShowCreateModal(true)}
@@ -106,7 +117,9 @@ export default function ProjectsPage() {
         </button>
       </div>
 
-      {showCreateModal && <CreateProjectModal onClose={() => setShowCreateModal(false)} />}
+      {showCreateModal && (
+        <CreateProjectModal onClose={() => setShowCreateModal(false)} />
+      )}
     </div>
   );
 }

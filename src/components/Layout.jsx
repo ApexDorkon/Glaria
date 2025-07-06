@@ -1,22 +1,40 @@
 import { Outlet, Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import GlariaLogo from "../assets/GlariaLogoName3.png";
 import SignupModal from "../components/SignupModal";
 
 export default function Layout({ children }) {
   const navigate = useNavigate();
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showLoginOptions, setShowLoginOptions] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
   const [twitterUser, setTwitterUser] = useState(null);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
 
-  // ✅ Load token on mount
+  // Load token on mount
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (token) setIsAuthenticated(true);
   }, []);
 
-  // ✅ Handle Twitter OAuth
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileMenuOpen(false);
+      }
+    };
+    if (profileMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [profileMenuOpen]);
+
+  // Handle Twitter OAuth callback in URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
@@ -90,6 +108,7 @@ export default function Layout({ children }) {
     localStorage.removeItem("access_token");
     setIsAuthenticated(false);
     setTwitterUser(null);
+    setProfileMenuOpen(false);
     navigate("/");
   };
 
@@ -97,40 +116,81 @@ export default function Layout({ children }) {
     <div className="relative min-h-screen w-full overflow-auto bg-[url('/bg-texture.jpg')] bg-cover bg-fixed bg-center bg-[#c2dafc]">
       <div className="absolute inset-0 bg-white/10 backdrop-blur-[2px] z-0 pointer-events-none" />
 
-      <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 py-10 flex flex-col items-center gap-12 text-black">
+      <div className="relative z-10 max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-12 py-10 flex flex-col items-center gap-12 text-black">
         {/* Navbar */}
-        <header className="w-full flex justify-between items-center px-8 py-4 bg-white/30 backdrop-blur-lg rounded-3xl border border-white/40 shadow-md">
-          <div className="flex items-center space-x-3">
-            <img src={GlariaLogo} alt="Logo" className="w-20 h-20" />
-            <span className="text-xl font-bold">GLARIA</span>
+        <header className="w-full flex justify-between items-center px-6 py-4 bg-white/30 backdrop-blur-lg rounded-3xl border border-white/40 shadow-md">
+          {/* Left: Logo and GLARIA text side by side */}
+          <div
+            className="flex items-center cursor-pointer space-x-3"
+            onClick={() => navigate("/")}
+          >
+            <img src={GlariaLogo} alt="Logo" className="w-14 h-14 sm:w-16 sm:h-16" />
+            <span className="text-xl sm:text-2xl font-bold select-none">GLARIA</span>
           </div>
-          <nav className="space-x-8 font-medium text-gray-800">
-            <Link to="/">Home</Link>
-            <Link to="/quests">Quests</Link>
-            <Link to="/projects">Projects</Link>
-            {isAuthenticated ? (
-              <div className="inline-flex items-center gap-4">
-                <Link to="/profile" className="hover:underline">Profile</Link>
-                <button
-                  onClick={handleLogout}
-                  className="px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowLoginOptions(true)}
-                className="px-4 py-2 bg-white/50 backdrop-blur-md rounded-full border border-white/30 hover:scale-105 transition"
+
+          {/* Right: Links and profile/login */}
+          <div className="flex items-center space-x-6">
+            {/* Quests and Projects links */}
+            <nav className="flex space-x-6 text-gray-800 font-medium text-base md:text-lg lg:text-xl">
+              <Link
+                to="/quests"
+                className="hover:no-underline hover:text-gray-900 px-3 py-2 md:px-4 md:py-3"
               >
-                Login
-              </button>
-            )}
-          </nav>
+                Quests
+              </Link>
+              <Link
+                to="/projects"
+                className="hover:no-underline hover:text-gray-900 px-3 py-2 md:px-4 md:py-3"
+              >
+                Projects
+              </Link>
+            </nav>
+
+            {/* Profile photo / Login */}
+            <div className="relative" ref={profileMenuRef}>
+              {isAuthenticated ? (
+                <>
+                  <img
+                    src={twitterUser?.profile_image_url || "/default-profile.png"}
+                    alt="Profile"
+                    className="rounded-full cursor-pointer w-10 h-10 md:w-14 md:h-14 lg:w-16 lg:h-16"
+                    onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                    title="Account menu"
+                  />
+                  {profileMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50 flex flex-col">
+                      <Link
+                        to="/profile"
+                        className="block px-4 py-2 hover:bg-gray-100 text-gray-800"
+                        onClick={() => setProfileMenuOpen(false)}
+                      >
+                        Profile
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600 font-semibold"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <button
+                  onClick={() => setShowLoginOptions(true)}
+                  className="py-2 px-5 bg-white/50 backdrop-blur-md rounded-full border border-white/30 hover:scale-105 transition text-gray-800 font-semibold"
+                >
+                  Login
+                </button>
+              )}
+            </div>
+          </div>
         </header>
 
+        {/* Main Content */}
         <main className="w-full">{children || <Outlet />}</main>
 
+        {/* Signup Modal */}
         {showSignupModal && (
           <SignupModal
             onClose={() => setShowSignupModal(false)}
@@ -141,6 +201,7 @@ export default function Layout({ children }) {
         )}
       </div>
 
+      {/* Login Options Modal */}
       {showLoginOptions && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-xl text-center space-y-4 relative">

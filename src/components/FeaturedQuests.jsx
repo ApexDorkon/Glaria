@@ -47,38 +47,37 @@ export default function FeaturedQuests() {
       xp: 40,
     },
   ];
-
-  return (
-    <div className="w-full px-10 py-10 bg-white/30 backdrop-blur-md rounded-3xl border border-white/40 shadow-lg">
-      <h2 className="text-lg font-semibold mb-6">FEATURED QUESTS</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 grid-rows-2">
-        {quests.map((quest) => (
-          <div
-            key={quest.id}
-            onClick={() => navigate(`/quests/${quest.id}`)}
-            className="aspect-[4/3] rounded-xl bg-white/50 border border-white/30 shadow-inner p-6 flex flex-col justify-between hover:scale-[1.02] transition duration-300 ease-in-out cursor-pointer"
-          >
-            <p className="text-xl font-semibold text-gray-800 leading-snug">
-              {quest.description}
-            </p>
-            <div className="flex justify-between items-end mt-4">
-              <div className="flex items-center gap-2">
-                <img
-                  src={quest.projectLogo}
-                  alt={quest.projectName}
-                  className="w-6 h-6 rounded-full"
-                />
-                <span className="text-sm font-medium text-gray-700">
-                  {quest.projectName}
-                </span>
-              </div>
-              <div className="bg-white/60 backdrop-blur-md px-3 py-1 rounded-full shadow text-xs font-semibold text-gray-900">
-                +{quest.xp} XP
-              </div>
+return (
+  <div className="w-full px-4 sm:px-6 md:px-10 py-6 sm:py-10 bg-white/30 backdrop-blur-md rounded-3xl border border-white/40 shadow-lg">
+    <h2 className="text-lg font-semibold mb-6">FEATURED QUESTS</h2>
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+      {quests.map((quest) => (
+        <div
+          key={quest.id}
+          onClick={() => navigate(`/quests/${quest.id}`)}
+          className="aspect-[4/3] rounded-xl bg-white/50 border border-white/30 shadow-inner p-4 sm:p-6 flex flex-col justify-between hover:scale-[1.02] transition duration-300 ease-in-out cursor-pointer"
+        >
+          <p className="text-base sm:text-xl font-semibold text-gray-800 leading-snug">
+            {quest.description}
+          </p>
+          <div className="flex justify-between items-end mt-4">
+            <div className="flex items-center gap-2">
+              <img
+                src={quest.projectLogo}
+                alt={quest.projectName}
+                className="w-5 h-5 sm:w-6 sm:h-6 rounded-full"
+              />
+              <span className="text-xs sm:text-sm font-medium text-gray-700">
+                {quest.projectName}
+              </span>
+            </div>
+            <div className="bg-white/60 backdrop-blur-md px-2 py-1 rounded-full shadow text-xs font-semibold text-gray-900">
+              +{quest.xp} XP
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
-  );
+  </div>
+);
 }

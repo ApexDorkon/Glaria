@@ -95,16 +95,25 @@ export default function ProjectDetail() {
         <h1 className="text-3xl font-bold text-gray-900">{project.name}</h1>
         <p className="text-sm text-gray-700 mt-2">{project.description}</p>
 
-        {/* XP Display */}
-        <div className="mt-4 w-full max-w-sm bg-white/40 backdrop-blur-lg rounded-full overflow-hidden border border-white/30 shadow">
-          <div
-            className="bg-indigo-500 text-xs text-white text-center py-1"
-            style={{ width: `${project.totalXp}%` }}
-          >
-            {project.totalXp} XP Collected
-          </div>
-        </div>
-
+       {/* XP Display with liquid glass effect */}
+<div className="mt-4 w-full max-w-sm bg-white/40 backdrop-blur-lg rounded-full overflow-hidden border border-white/30 shadow relative h-4">
+  <div
+    className="h-4 rounded-full relative transition-all duration-1500 ease-in-out shadow-[0_0_10px_#6366f1]"
+    style={{
+      width: `${project.totalXp}%`,
+      background:
+        "linear-gradient(270deg, #6366f1, #818cf8, #6366f1)",
+      backgroundSize: "600% 600%",
+      animation: "gradientShift 8s ease infinite",
+    }}
+  >
+    {/* Shimmer highlight */}
+    <div className="absolute top-0 left-0 h-full w-20 bg-white/30 rounded-full animate-shimmer" />
+  </div>
+  <div className="absolute inset-0 flex items-center justify-center text-xs text-white font-semibold select-none">
+    {project.totalXp} XP Collected
+  </div>
+</div>
         {/* Social Links */}
         <div className="flex gap-4 mt-6">
           {project.twitter_url && (
