@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-
+import Leaderboard from "../../components/Leaderboard";
 export default function ProjectDetail() {
   const { projectId } = useParams();
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ export default function ProjectDetail() {
   const [loading, setLoading] = useState(true);
   const [xpData, setXpData] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
+const [leaderboardData, setLeaderboardData] = useState([]);
   useEffect(() => {
     const fetchProjectAndQuests = async () => {
       try {
@@ -29,7 +29,17 @@ export default function ProjectDetail() {
           ...projectData,
           logo: projectData.image_url || "/fallback.png",
         });
-
+if (token) {
+        const leaderboardRes = await fetch(`https://glaria-api.onrender.com/projects/${projectId}/leaderboard`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (leaderboardRes.ok) {
+          const leaderboardJson = await leaderboardRes.json();
+          setLeaderboardData(leaderboardJson);
+        } else {
+          setLeaderboardData([]);
+        }
+      }
         // Fetch quests by project id (no auth needed)
         const questsRes = await fetch(`https://glaria-api.onrender.com/api/quests/by-project/${projectId}`);
         if (!questsRes.ok) throw new Error("Failed to fetch quests");
@@ -181,6 +191,12 @@ export default function ProjectDetail() {
             </div>
           </div>
         ))}
+        {/* Leaderboard */}
+      {leaderboardData.length > 0 && (
+        <div className="mt-12">
+          <Leaderboard type="project" data={leaderboardData} />
+        </div>
+      )}
       </div>
 
       <style>{`
