@@ -13,13 +13,11 @@ export default function Layout({ children }) {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
 
-  // Load token on mount
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (token) setIsAuthenticated(true);
   }, []);
 
-  // Close profile dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
@@ -34,7 +32,6 @@ export default function Layout({ children }) {
     };
   }, [profileMenuOpen]);
 
-  // Handle Twitter OAuth callback in URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
@@ -116,38 +113,64 @@ export default function Layout({ children }) {
     <div className="relative min-h-screen w-full overflow-auto bg-[url('/bg-texture.jpg')] bg-cover bg-fixed bg-center bg-[#c2dafc]">
       <div className="absolute inset-0 bg-white/10 backdrop-blur-[2px] z-0 pointer-events-none" />
 
-      <div className="relative z-10 max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-12 py-10 flex flex-col items-center gap-12 text-black">
+      <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 py-10 flex flex-col items-center gap-8 text-black">
         {/* Navbar */}
-        <header className="w-full flex justify-between items-center px-6 py-4 bg-white/30 backdrop-blur-lg rounded-3xl border border-white/40 shadow-md">
-          {/* Left: Logo and GLARIA text side by side */}
+        <header className="
+          w-full
+          bg-white/30
+          backdrop-blur-lg
+          rounded-3xl
+          border
+          border-white/40
+          shadow-md
+          px-4 py-4
+          flex
+          items-center
+          justify-between
+          flex-wrap
+
+          /* Mobile styles */
+          md:flex-nowrap
+        ">
+          {/* Logo and GLARIA text */}
           <div
-            className="flex items-center cursor-pointer space-x-3"
+            className="
+              flex items-center cursor-pointer space-x-3 flex-shrink-0
+              w-full justify-center mb-3 md:mb-0 md:w-auto md:justify-start
+            "
             onClick={() => navigate("/")}
           >
-            <img src={GlariaLogo} alt="Logo" className="w-14 h-14 sm:w-16 sm:h-16" />
-            <span className="text-xl sm:text-2xl font-bold select-none">GLARIA</span>
+            <img src={GlariaLogo} alt="Logo" className="w-12 h-12 sm:w-14 sm:h-14" />
+            <span className="text-lg sm:text-xl font-bold select-none whitespace-nowrap">GLARIA</span>
           </div>
 
-          {/* Right: Links and profile/login */}
-          <div className="flex items-center space-x-6">
-            {/* Quests and Projects links */}
+          {/* Nav links and profile/login */}
+          <div className="
+            flex
+            w-full
+            justify-around
+            items-center
+            space-x-0
+            md:space-x-6
+            md:w-auto
+            md:justify-end
+          ">
             <nav className="flex space-x-6 text-gray-800 font-medium text-base md:text-lg lg:text-xl">
               <Link
                 to="/quests"
-                className="hover:no-underline hover:text-gray-900 px-3 py-2 md:px-4 md:py-3"
+                className="hover:no-underline hover:text-gray-900 px-2 py-2 whitespace-nowrap"
               >
                 Quests
               </Link>
               <Link
                 to="/projects"
-                className="hover:no-underline hover:text-gray-900 px-3 py-2 md:px-4 md:py-3"
+                className="hover:no-underline hover:text-gray-900 px-2 py-2 whitespace-nowrap"
               >
                 Projects
               </Link>
             </nav>
 
-            {/* Profile photo / Login */}
-            <div className="relative" ref={profileMenuRef}>
+            <div className="relative flex-shrink-0">
               {isAuthenticated ? (
                 <>
                   <img
@@ -227,6 +250,16 @@ export default function Layout({ children }) {
           </div>
         </div>
       )}
+      <style>{`
+        /* Hide scrollbar but allow horizontal scroll */
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none; /* IE and Edge */
+          scrollbar-width: none; /* Firefox */
+        }
+      `}</style>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
-
+import LoginModal from "../../components/LoginModal"; 
 export default function ProjectQuest() {
   const { questId } = useParams();
   const navigate = useNavigate();
@@ -11,59 +11,93 @@ export default function ProjectQuest() {
   const [collecting, setCollecting] = useState(false);
   const [collected, setCollected] = useState(false);
   const [collectError, setCollectError] = useState(null);
+const [showLoginModal, setShowLoginModal] = useState(false);
+  const [xpInfo, setXpInfo] = useState({ points: 0, project_points: 0 });
 
+  // actionStates: for each actionId: { status: "idle" | "inProgress" | "done", timer: number, shake: boolean }
   const [actionStates, setActionStates] = useState({});
   const timers = useRef({});
 
   useEffect(() => {
-    const fetchQuest = async () => {
+    const fetchQuestAndXp = async () => {
       try {
         const token = localStorage.getItem("access_token");
-        if (!token) throw new Error("User not authenticated");
 
-        const res = await fetch(`https://glaria-api.onrender.com/api/quests/${questId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error(`Failed to fetch quest: ${res.statusText}`);
+        // Fetch quest WITH auth if token, else WITHOUT auth
+        const questRes = await fetch(
+          `https://glaria-api.onrender.com/api/quests/${questId}`,
+          token
+            ? { headers: { Authorization: `Bearer ${token}` } }
+            : undefined
+        );
 
-        const data = await res.json();
+        if (!questRes.ok) {
+          // Try to read error body for more info
+          let errMsg = `Failed to fetch quest: ${questRes.statusText}`;
+          try {
+            const errData = await questRes.json();
+            if (errData.detail) errMsg += ` - ${JSON.stringify(errData.detail)}`;
+          } catch {}
+          throw new Error(errMsg);
+        }
+        const data = await questRes.json();
 
+        // Fetch project info for the quest
         const projectRes = await fetch(`https://glaria-api.onrender.com/projects/${data.project_id}`);
-        if (!projectRes.ok) throw new Error("Failed to fetch project");
+        if (!projectRes.ok) throw new Error("Failed to fetch project info");
         const projectData = await projectRes.json();
 
         setQuest({ ...data, project: projectData });
 
-        // Init action states
+        // Initialize action states
         const initialStates = {};
         (data.actions || []).forEach(a => {
-          initialStates[a.id] = { status: "idle", timer: 0 };
+          initialStates[a.id] = { status: "idle", timer: 0, shake: false };
         });
         setActionStates(initialStates);
 
-       setCollected(data.completed === true);
-      setCollectError(null);
-    } catch (err) {
-      setError(err.message || "Failed to load quest");
-    } finally {
-      setLoading(false);
-    }
-  };
+        // Set collected only if authenticated and quest is completed
+        setCollected(token && data.completed === true);
+        setCollectError(null);
 
-    fetchQuest();
+        // Fetch XP info (no auth needed)
+        const xpRes = await fetch(`https://glaria-api.onrender.com/api/quests/xp-by-quest/${questId}`);
+        if (xpRes.ok) {
+          const xpData = await xpRes.json();
+          setXpInfo({
+            points: xpData.points || 0,
+            project_points: xpData.project_points || 0,
+          });
+        } else {
+          setXpInfo({ points: 0, project_points: 0 });
+        }
+      } catch (err) {
+        setError(err.message || "Failed to load quest");
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchQuestAndXp();
+
+    // Clear timers on unmount
     return () => {
       Object.values(timers.current).forEach(clearInterval);
     };
   }, [questId]);
 
+  // Handle action button click (start timer)
   const handleActionClick = (actionId, url) => {
+      if (!localStorage.getItem("access_token")) {
+    setShowLoginModal(true);
+    return;
+  }
     const currentState = actionStates[actionId];
     if (currentState.status === "idle") {
       const countdown = 10;
       setActionStates(prev => ({
         ...prev,
-        [actionId]: { status: "inProgress", timer: countdown },
+        [actionId]: { status: "inProgress", timer: countdown, shake: false },
       }));
 
       timers.current[actionId] = setInterval(() => {
@@ -78,29 +112,45 @@ export default function ProjectQuest() {
       }, 1000);
 
       window.open(url, "_blank");
-    } else if (currentState.status === "inProgress" && currentState.timer === 0) {
-      setActionStates(prev => ({
-        ...prev,
-        [actionId]: { status: "done", timer: 0 },
-      }));
     }
   };
 
+  // Handle reload button click
   const handleReloadClick = (actionId, e) => {
     e.stopPropagation();
-    clearInterval(timers.current[actionId]);
-    setActionStates(prev => ({
-      ...prev,
-      [actionId]: { status: "idle", timer: 0 },
-    }));
+    const currentState = actionStates[actionId];
+    if (currentState.status === "idle") {
+      // Trigger shake animation for 1s
+      setActionStates(prev => ({
+        ...prev,
+        [actionId]: { ...prev[actionId], shake: true }
+      }));
+      setTimeout(() => {
+        setActionStates(prev => ({
+          ...prev,
+          [actionId]: { ...prev[actionId], shake: false }
+        }));
+      }, 1000);
+    } else if (currentState.status === "inProgress" && currentState.timer === 0) {
+      clearInterval(timers.current[actionId]);
+      setActionStates(prev => ({
+        ...prev,
+        [actionId]: { status: "done", timer: 0, shake: false }
+      }));
+    }
   };
 
   const allActionsDone = quest && quest.actions
     ? quest.actions.every(a => actionStates[a.id]?.status === "done")
     : false;
 
+  // Handle XP collection
   const handleCollectXp = async () => {
     if (!allActionsDone || collecting || collected) return;
+    if (!localStorage.getItem("access_token")) {
+    setShowLoginModal(true);
+    return;
+  }
     setCollecting(true);
     setCollectError(null);
 
@@ -130,7 +180,7 @@ export default function ProjectQuest() {
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto mt-12 flex flex-col gap-10 px-4 animate-pulse">
-        {/* Optionally add skeleton here */}
+        {/* Optional loading skeleton */}
       </div>
     );
   }
@@ -168,9 +218,17 @@ export default function ProjectQuest() {
           overflow: visible;
         }
         .action-button.done {
-          background-color: #22c55e;
+          background: linear-gradient(90deg, #22c55e, #16a34a);
           color: white;
           cursor: default;
+          box-shadow: 0 4px 6px rgba(22, 163, 74, 0.4);
+          font-weight: 600;
+          letter-spacing: 0.03em;
+          user-select: none;
+          border: none;
+        }
+        .action-button.done .action-text {
+          color: white !important;
         }
         .action-button.inProgress {
           background-color: #374151;
@@ -210,10 +268,9 @@ export default function ProjectQuest() {
           transform: translateY(-50%);
           width: 40px;
           height: 40px;
-          background: white;
+          background-color: transparent;
           border: none;
           border-radius: 50%;
-          box-shadow: none;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -237,6 +294,17 @@ export default function ProjectQuest() {
         }
         .reload-button:hover .reload-icon {
           stroke: #1e40af;
+        }
+        .reload-button-done .reload-icon {
+          stroke: white !important;
+        }
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          20%, 60% { transform: translateX(-5px); }
+          40%, 80% { transform: translateX(5px); }
+        }
+        .shake {
+          animation: shake 0.5s ease-in-out;
         }
         .collect-button {
           background-color: #6366f1;
@@ -268,6 +336,34 @@ export default function ProjectQuest() {
           color: #dc2626;
           font-weight: 600;
         }
+        .xp-indicators {
+          margin-top: 12px;
+          display: flex;
+          gap: 12px;
+        }
+        .xp-pill {
+          flex: 1;
+          padding: 0.4rem 1rem;
+          border-radius: 9999px;
+          background: rgba(255 255 255 / 0.25);
+          backdrop-filter: blur(8px);
+          color: #1f2937;
+          font-weight: 600;
+          font-size: 0.9rem;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          box-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
+          user-select: none;
+        }
+        .xp-pill .label {
+          margin-right: 8px;
+          opacity: 0.75;
+        }
+        .xp-pill .value {
+          font-weight: 700;
+          color: #4f46e5;
+        }
       `}</style>
 
       <div className="max-w-5xl mx-auto mt-12 flex flex-col gap-10 px-4">
@@ -282,35 +378,48 @@ export default function ProjectQuest() {
           <div className="flex-1 bg-white/30 backdrop-blur-lg p-8 rounded-3xl border border-white/40 shadow-md">
             <h2 className="text-3xl font-bold mb-4">{quest.title}</h2>
             <p className="text-lg leading-relaxed text-black/80">{quest.description}</p>
+
+            {/* XP Indicators */}
+            <div className="xp-indicators">
+              <div className="xp-pill">
+                <span className="label">Glaria XP:</span>
+                <span className="value">{xpInfo.points}</span>
+              </div>
+              <div className="xp-pill">
+                <span className="label">Project XP:</span>
+                <span className="value">{xpInfo.project_points}</span>
+              </div>
+            </div>
           </div>
 
           <div className="w-full md:w-[320px] flex flex-col gap-6 bg-white/30 backdrop-blur-lg p-6 rounded-3xl border border-white/40 shadow-md">
             {quest.actions.map((action) => {
-              const state = actionStates[action.id] || { status: "idle", timer: 0 };
-              const isDisabled = state.status === "inProgress" && state.timer > 0;
+              const state = actionStates[action.id] || { status: "idle", timer: 0, shake: false };
+              const isInProgress = state.status === "inProgress" && state.timer > 0;
               const isDone = state.status === "done";
 
               return (
                 <div key={action.id} style={{ position: "relative", width: "100%" }}>
                   <button
-                    onClick={() => !isDisabled && handleActionClick(action.id, action.target_url)}
-                    disabled={isDisabled || isDone}
-                    className={`action-button ${isDone ? "done" : isDisabled ? "inProgress" : ""}`}
+                    onClick={() => !isInProgress && !isDone && handleActionClick(action.id, action.target_url)}
+                    disabled={isInProgress || isDone}
+                    className={`action-button ${isDone ? "done" : isInProgress ? "inProgress" : ""} ${state.shake ? "shake" : ""}`}
                   >
                     <span className="action-text">{action.button_type}</span>
-                    {isDisabled && <span className="timer">{state.timer}s</span>}
+                    {isInProgress && <span className="timer">{state.timer}s</span>}
 
                     <button
-                      className="reload-button"
-                      title="Reset action"
+                      className={`reload-button ${isDone ? "reload-button-done" : ""}`}
+                      title="Reload"
                       onClick={(e) => handleReloadClick(action.id, e)}
-                      disabled={isDisabled || isDone}
+                      disabled={isDone || isInProgress}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
                         className="reload-icon"
+                        style={{ stroke: isDone ? "white" : undefined }}
                       >
                         <path d="M4 4v5h.582M20 20v-5h-.581M4.93 19.07a9 9 0 1 0 0-14.14" />
                       </svg>
@@ -324,9 +433,17 @@ export default function ProjectQuest() {
               disabled={!allActionsDone || collecting || collected}
               onClick={handleCollectXp}
               className="collect-button"
-              title={(!allActionsDone ? "Complete all actions first" : collecting ? "Collecting XP..." : collected ? "XP Collected" : "")}
+              title={
+                !allActionsDone
+                  ? "Complete all actions first"
+                  : collecting
+                  ? "Collecting XP..."
+                  : collected
+                  ? "XP Collected"
+                  : "Claim"
+              }
             >
-              🎉 {collected ? "XP Collected!" : collecting ? "Collecting XP..." : `Collect ${quest.points} XP`}
+              🎉 {collected ? "Claimed" : allActionsDone ? "Claim" : `Collect ${xpInfo.points} XP`}
             </button>
 
             {collectError && <p className="collect-error">{collectError}</p>}
@@ -349,6 +466,9 @@ export default function ProjectQuest() {
           </div>
         </div>
       </div>
+      {showLoginModal && (
+  <LoginModal onClose={() => setShowLoginModal(false)} />
+)}
     </>
   );
 }

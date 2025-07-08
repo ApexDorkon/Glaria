@@ -7,21 +7,30 @@ export default function ProjectDetail() {
   const [project, setProject] = useState(null);
   const [quests, setQuests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [xpData, setXpData] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const fetchProjectAndQuests = async () => {
       try {
-        // Fetch project details
+        const token = localStorage.getItem("access_token");
+        setIsAuthenticated(!!token);
+
+        // Fetch project details (no auth needed)
         const projectRes = await fetch(`https://glaria-api.onrender.com/projects/${projectId}`);
+        if (!projectRes.ok) {
+          setProject(null);
+          setLoading(false);
+          return;
+        }
         const projectData = await projectRes.json();
 
         setProject({
           ...projectData,
           logo: projectData.image_url || "/fallback.png",
-          totalXp: 70, // Temporary until real XP data is available
         });
 
-        // Fetch quests by project id
+        // Fetch quests by project id (no auth needed)
         const questsRes = await fetch(`https://glaria-api.onrender.com/api/quests/by-project/${projectId}`);
         if (!questsRes.ok) throw new Error("Failed to fetch quests");
         const questsData = await questsRes.json();
@@ -36,8 +45,22 @@ export default function ProjectDetail() {
         }));
 
         setQuests(mappedQuests);
+
+        // If authenticated, fetch XP info
+        if (token) {
+          const xpRes = await fetch(`https://glaria-api.onrender.com/projects/xp-by-project/${projectId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (xpRes.ok) {
+            const xpInfo = await xpRes.json();
+            setXpData(xpInfo);
+          } else {
+            setXpData(null);
+          }
+        }
       } catch (err) {
         console.error("Failed to fetch project or quests:", err);
+        setProject(null);
       } finally {
         setLoading(false);
       }
@@ -47,75 +70,56 @@ export default function ProjectDetail() {
   }, [projectId]);
 
   if (loading) {
-  return (
-    <div className="w-full px-10 py-10 bg-white/30 backdrop-blur-md rounded-3xl border border-white/40 shadow-lg max-w-5xl mx-auto mt-12 animate-pulse">
-      {/* Project Header Skeleton */}
-      <div className="flex flex-col items-center justify-center bg-white/20 backdrop-blur-lg p-6 rounded-[2rem] shadow mb-8">
-        <div className="w-20 h-20 rounded-full bg-gray-300 mb-4" />
-        <div className="h-8 w-48 bg-gray-300 rounded mb-2" />
-        <div className="h-4 w-72 bg-gray-300 rounded mb-4" />
-        <div className="mt-4 w-full max-w-sm bg-gray-300 rounded-full h-4" />
+    return (
+      <div className="w-full px-10 py-10 bg-white/30 backdrop-blur-md rounded-3xl border border-white/40 shadow-lg max-w-5xl mx-auto mt-12 animate-pulse">
+        <div className="h-20 w-20 rounded-full bg-gray-300 mb-6 mx-auto" />
+        <div className="h-8 bg-gray-300 rounded mb-4 w-3/5 mx-auto" />
+        <div className="h-4 bg-gray-300 rounded mb-2 w-4/5 mx-auto" />
+        <div className="h-4 bg-gray-300 rounded mb-6 w-2/3 mx-auto" />
+        <div className="h-6 bg-gray-300 rounded mb-2 w-full mx-auto" />
+        <div className="h-6 bg-gray-300 rounded w-full mx-auto" />
       </div>
+    );
+  }
 
-      {/* Social Links Skeleton */}
-      <div className="flex gap-4 mt-6 justify-center">
-        {[1, 2, 3].map((_, i) => (
-          <div key={i} className="w-20 h-8 rounded-full bg-gray-300" />
-        ))}
-      </div>
+  if (!project) return <p className="text-center mt-20 text-lg font-semibold text-red-600">Project not found.</p>;
 
-      {/* Quests Skeleton */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-10">
-        {[1, 2, 3, 4, 5, 6].map((_, i) => (
-          <div
-            key={i}
-            className="aspect-[4/3] rounded-xl bg-gray-300 p-6 flex flex-col justify-between"
-          >
-            <div className="h-6 rounded bg-gray-400 w-3/4 mb-6" />
-            <div className="flex justify-between items-end mt-4">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-gray-400" />
-                <div className="h-4 w-20 rounded bg-gray-400" />
-              </div>
-              <div className="h-5 w-10 rounded bg-gray-400" />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-  if (!project) return null;
+  const totalXp = xpData?.total_project_xp || 0;
+  const userClaimedXp = xpData?.user_claimed_xp || 0;
+  const claimedPercent = totalXp ? Math.min(100, Math.round((userClaimedXp / totalXp) * 100)) : 0;
 
   return (
-    <div className="w-full px-10 py-10 bg-white/30 backdrop-blur-md rounded-3xl border border-white/40 shadow-lg">
+    <div className="w-full px-6 py-10 bg-white/30 backdrop-blur-md rounded-3xl border border-white/40 shadow-lg max-w-5xl mx-auto">
       {/* Project Header */}
       <div className="flex flex-col items-center justify-center bg-white/20 backdrop-blur-lg p-6 rounded-[2rem] shadow mb-8">
         <img src={project.logo} alt={project.name} className="w-20 h-20 rounded-full mb-4" />
-        <h1 className="text-3xl font-bold text-gray-900">{project.name}</h1>
-        <p className="text-sm text-gray-700 mt-2">{project.description}</p>
+        <h1 className="text-3xl font-bold text-gray-900 text-center">{project.name}</h1>
+        <p className="text-sm text-gray-700 mt-2 text-center">{project.description}</p>
 
-       {/* XP Display with liquid glass effect */}
-<div className="mt-4 w-full max-w-sm bg-white/40 backdrop-blur-lg rounded-full overflow-hidden border border-white/30 shadow relative h-4">
-  <div
-    className="h-4 rounded-full relative transition-all duration-1500 ease-in-out shadow-[0_0_10px_#6366f1]"
-    style={{
-      width: `${project.totalXp}%`,
-      background:
-        "linear-gradient(270deg, #6366f1, #818cf8, #6366f1)",
-      backgroundSize: "600% 600%",
-      animation: "gradientShift 8s ease infinite",
-    }}
-  >
-    {/* Shimmer highlight */}
-    <div className="absolute top-0 left-0 h-full w-20 bg-white/30 rounded-full animate-shimmer" />
-  </div>
-  <div className="absolute inset-0 flex items-center justify-center text-xs text-white font-semibold select-none">
-    {project.totalXp} XP Collected
-  </div>
-</div>
+        {/* XP Display only if authenticated and xpData available */}
+        {isAuthenticated && xpData && (
+          <div className="mt-6 w-full max-w-sm bg-white/40 backdrop-blur-lg rounded-full overflow-hidden border border-white/30 shadow relative h-5">
+            <div
+              className="h-5 rounded-full relative transition-all duration-1500 ease-in-out shadow-[0_0_10px_#6366f1]"
+              style={{
+                width: `${claimedPercent}%`,
+                background:
+                  "linear-gradient(270deg, #6366f1, #818cf8, #6366f1)",
+                backgroundSize: "600% 600%",
+                animation: "gradientShift 8s ease infinite",
+              }}
+            >
+              {/* Shimmer highlight */}
+              <div className="absolute top-0 left-0 h-full w-20 bg-white/30 rounded-full animate-shimmer" />
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center text-xs text-black/50 font-semibold select-none">
+              {userClaimedXp} / {totalXp} XP Collected ({claimedPercent}%)
+            </div>
+          </div>
+        )}
+
         {/* Social Links */}
-        <div className="flex gap-4 mt-6">
+        <div className="flex flex-wrap justify-center gap-4 mt-6">
           {project.twitter_url && (
             <a
               href={project.twitter_url}
@@ -178,6 +182,28 @@ export default function ProjectDetail() {
           </div>
         ))}
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          /* Make quests grid one column on mobile */
+          .grid-cols-3 {
+            grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+          }
+        }
+
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .animate-shimmer {
+          animation: shimmer 2s infinite linear;
+        }
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+      `}</style>
     </div>
   );
 }

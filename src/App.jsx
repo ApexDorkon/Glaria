@@ -11,23 +11,26 @@ import ProjectDetail from "./pages/Projects/ProjectDetail";
 import CreateProfile from "./pages/Profile/CreateProfile";
 import TwitterCallback from "./pages/Auth/TwitterCallback";
 import OAuthSuccess from "./pages/OAuthSuccess";
+import { ResponsiveProvider } from './context/ResponsiveContext';
 
 export default function App() {
   return (
     <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/quests" element={<Quests />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/quests/:questId" element={<ProjectQuest />} />
-          <Route path="/projects/:projectId" element={<ProjectDetail />} />
-          <Route path="/auth/twitter/callback" element={<TwitterCallback />} />
-          <Route path="/oauth-success" element={<OAuthSuccess />} />
-          <Route path="/create-profile" element={<CreateProfile />} />
-        </Routes>
-      </Layout>
+      <ResponsiveProvider>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/quests" element={<Quests />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/quests/:questId" element={<ProjectQuest />} />
+            <Route path="/projects/:projectId" element={<ProjectDetail />} />
+            <Route path="/auth/twitter/callback" element={<TwitterCallback />} />
+            <Route path="/oauth-success" element={<OAuthSuccess />} />
+            <Route path="/create-profile" element={<CreateProfile />} />
+          </Routes>
+        </Layout>
+      </ResponsiveProvider>
     </Router>
   );
 }

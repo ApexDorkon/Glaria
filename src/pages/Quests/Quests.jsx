@@ -17,12 +17,15 @@ export default function QuestsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Fetch quests
         const questRes = await fetch("https://glaria-api.onrender.com/api/quests/");
         const questData = await questRes.json();
 
+        // Get unique project IDs
         const uniqueProjectIds = [...new Set(questData.map((q) => q.project_id))];
         const projectMap = {};
 
+        // Fetch project data for each project ID including project_type
         await Promise.all(
           uniqueProjectIds.map(async (id) => {
             try {
@@ -31,14 +34,15 @@ export default function QuestsPage() {
               projectMap[id] = project;
             } catch (err) {
               console.error(`Failed to fetch project ${id}`, err);
-              projectMap[id] = { name: "Unknown", image_url: "/fallback.png" };
+              projectMap[id] = { name: "Unknown", image_url: "/fallback.png", project_type: "Unknown" };
             }
           })
         );
 
+        // Merge quests with project data, set category from project_type
         const mergedQuests = questData.map((q) => ({
           id: q.id,
-          category: q.type,
+          category: projectMap[q.project_id]?.project_type || "Unknown",
           description: q.title,
           projectId: q.project_id,
           projectName: projectMap[q.project_id]?.name || "Unknown",
@@ -48,7 +52,10 @@ export default function QuestsPage() {
           createdAt: q.created_at || new Date().toISOString(),
         }));
 
+        // Extract unique categories for filtering with 'All' prepended
         const uniqueCategories = ["All", ...new Set(mergedQuests.map((q) => q.category))];
+
+        // Sort quests by newest first
         const sorted = mergedQuests.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         setQuests(sorted);

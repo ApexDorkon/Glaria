@@ -11,23 +11,21 @@ export default function Hero() {
   }, []);
 
   if (isMobile) {
-    // Mobile version — add your mobile-specific layout here
     return (
-      <div className="w-full px-6 py-10 bg-white/30 backdrop-blur-md rounded-3xl border border-white/40 shadow-lg">
-        <h1 className="text-2xl font-semibold leading-snug text-gray-900 text-center">
-          Explore the Projects on Sophon chain,
-          <br />
+      <div className="w-full px-4 py-8 bg-white/30 backdrop-blur-md rounded-3xl border border-white/40 shadow-lg">
+        <h1 className="text-xl font-semibold leading-relaxed text-gray-900 text-center">
+          Explore the Projects on Sophon,
+          
           complete quests to collect points
         </h1>
       </div>
     );
   }
 
-  // Desktop version — unchanged, exactly as you provided
   return (
     <div className="w-full px-10 py-14 bg-white/30 backdrop-blur-md rounded-3xl border border-white/40 shadow-lg">
       <h1 className="text-3xl md:text-5xl font-bold leading-tight text-gray-900 text-center">
-        Explore the Projects on Sophon chain,<br /> complete quests to collect points
+        Explore the Projects on Sophon,<br /> complete quests to collect points
       </h1>
     </div>
   );
