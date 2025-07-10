@@ -365,107 +365,131 @@ const [showLoginModal, setShowLoginModal] = useState(false);
           color: #4f46e5;
         }
       `}</style>
+<div className="max-w-5xl mx-auto mt-12 flex flex-col gap-10 px-4">
+  <button
+    onClick={() => navigate(-1)}
+    className="self-start px-5 py-2 rounded-full bg-white/30 backdrop-blur-md border border-white/50 shadow text-sm font-medium text-gray-800 hover:bg-white/50 transition"
+  >
+    ← Back to Quests
+  </button>
 
-      <div className="max-w-5xl mx-auto mt-12 flex flex-col gap-10 px-4">
-        <button
-          onClick={() => navigate(-1)}
-          className="self-start px-5 py-2 rounded-full bg-white/30 backdrop-blur-md border border-white/50 shadow text-sm font-medium text-gray-800 hover:bg-white/50 transition"
-        >
-          ← Back to Quests
-        </button>
+  <div className="flex gap-10 items-start flex-col md:flex-row">
+    <div className="flex-1 bg-white/30 backdrop-blur-lg p-8 rounded-3xl border border-white/40 shadow-md">
+      <h2 className="text-3xl font-bold mb-4">{quest.title}</h2>
+      <p className="text-lg leading-relaxed text-black/80">{quest.description}</p>
 
-        <div className="flex gap-10 items-start flex-col md:flex-row">
-          <div className="flex-1 bg-white/30 backdrop-blur-lg p-8 rounded-3xl border border-white/40 shadow-md">
-            <h2 className="text-3xl font-bold mb-4">{quest.title}</h2>
-            <p className="text-lg leading-relaxed text-black/80">{quest.description}</p>
-
-            {/* XP Indicators */}
-            <div className="xp-indicators">
-              <div className="xp-pill">
-                <span className="label">Glaria XP:</span>
-                <span className="value">{xpInfo.points}</span>
-              </div>
-              <div className="xp-pill">
-                <span className="label">Project XP:</span>
-                <span className="value">{xpInfo.project_points}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="w-full md:w-[320px] flex flex-col gap-6 bg-white/30 backdrop-blur-lg p-6 rounded-3xl border border-white/40 shadow-md">
-            {quest.actions.map((action) => {
-              const state = actionStates[action.id] || { status: "idle", timer: 0, shake: false };
-              const isInProgress = state.status === "inProgress" && state.timer > 0;
-              const isDone = state.status === "done";
-
-              return (
-                <div key={action.id} style={{ position: "relative", width: "100%" }}>
-                  <button
-                    onClick={() => !isInProgress && !isDone && handleActionClick(action.id, action.target_url)}
-                    disabled={isInProgress || isDone}
-                    className={`action-button ${isDone ? "done" : isInProgress ? "inProgress" : ""} ${state.shake ? "shake" : ""}`}
-                  >
-                    <span className="action-text">{action.button_type}</span>
-                    {isInProgress && <span className="timer">{state.timer}s</span>}
-
-                    <button
-                      className={`reload-button ${isDone ? "reload-button-done" : ""}`}
-                      title="Reload"
-                      onClick={(e) => handleReloadClick(action.id, e)}
-                      disabled={isDone || isInProgress}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        className="reload-icon"
-                        style={{ stroke: isDone ? "white" : undefined }}
-                      >
-                        <path d="M4 4v5h.582M20 20v-5h-.581M4.93 19.07a9 9 0 1 0 0-14.14" />
-                      </svg>
-                    </button>
-                  </button>
-                </div>
-              );
-            })}
-
-            <button
-              disabled={!allActionsDone || collecting || collected}
-              onClick={handleCollectXp}
-              className="collect-button"
-              title={
-                !allActionsDone
-                  ? "Complete all actions first"
-                  : collecting
-                  ? "Collecting XP..."
-                  : collected
-                  ? "XP Collected"
-                  : "Claim"
-              }
-            >
-              🎉 {collected ? "Claimed" : allActionsDone ? "Claim" : `Collect ${xpInfo.points} XP`}
-            </button>
-
-            {collectError && <p className="collect-error">{collectError}</p>}
-            {collected && <p className="collect-message">🎉 Congratulations, you collected your XP!</p>}
-          </div>
+      {/* XP Indicators */}
+      <div className="xp-indicators">
+        <div className="xp-pill">
+          <span className="label">Glaria XP:</span>
+          <span className="value">{xpInfo.points}</span>
         </div>
-
-        <div
-          onClick={() => navigate(`/projects/${quest.project_id}`)}
-          className="bg-white/30 backdrop-blur-lg p-6 rounded-3xl border border-white/40 shadow-md flex items-center gap-6 cursor-pointer hover:bg-white/40 transition"
-        >
-          <img
-            src={quest.project.image_url || quest.project.logo || "/fallback.png"}
-            alt={quest.project.name}
-            className="w-16 h-16 rounded-full object-cover"
-          />
-          <div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-1">{quest.project.name}</h3>
-            <p className="text-gray-700 text-sm leading-relaxed">{quest.project.description}</p>
-          </div>
+        <div className="xp-pill">
+          <span className="label">Project XP:</span>
+          <span className="value">{xpInfo.project_points}</span>
         </div>
       </div>
+    </div>
+
+    <div
+      className="w-full md:w-[320px] relative rounded-3xl border border-white/40 shadow-md bg-white/30 backdrop-blur-lg p-6 flex flex-col gap-6"
+      style={{ pointerEvents: collected ? "none" : "auto" }}
+    >
+      {/* Black gradient overlay on top */}
+      {collected && (
+        <>
+          <div
+            className="absolute inset-x-0 top-0 h-56 rounded-t-3xl pointer-events-none"
+            style={{
+              background: "linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0))",
+              zIndex: 10,
+            }}
+          />
+          <div
+            className="absolute top-4 right-4 text-6xl text-yellow-400 drop-shadow-lg select-none z-20"
+            aria-label="Claimed"
+            title="Quest Claimed"
+          >
+            ✓⃝
+          </div>
+        </>
+      )}
+
+      {quest.actions.map((action) => {
+        const state = actionStates[action.id] || { status: "idle", timer: 0, shake: false };
+        const isInProgress = state.status === "inProgress" && state.timer > 0;
+        const isDone = state.status === "done";
+
+        return (
+          <div key={action.id} style={{ position: "relative", width: "100%" }}>
+            <button
+              onClick={() => !isInProgress && !isDone && handleActionClick(action.id, action.target_url)}
+              disabled={isInProgress || isDone || collected}
+              className={`action-button ${isDone ? "done" : isInProgress ? "inProgress" : ""} ${state.shake ? "shake" : ""}`}
+            >
+              <span className="action-text">{action.button_type}</span>
+              {isInProgress && <span className="timer">{state.timer}s</span>}
+
+              <button
+                className={`reload-button ${isDone ? "reload-button-done" : ""}`}
+                title="Reload"
+                onClick={(e) => handleReloadClick(action.id, e)}
+                disabled={isDone || isInProgress || collected}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  className="reload-icon"
+                  style={{ stroke: isDone ? "white" : undefined }}
+                >
+                  <path d="M4 4v5h.582M20 20v-5h-.581M4.93 19.07a9 9 0 1 0 0-14.14" />
+                </svg>
+              </button>
+            </button>
+          </div>
+        );
+      })}
+
+      <button
+        disabled={!allActionsDone || collecting || collected}
+        onClick={handleCollectXp}
+        className="collect-button"
+        title={
+          !allActionsDone
+            ? "Complete all actions first"
+            : collecting
+            ? "Collecting XP..."
+            : collected
+            ? "XP Collected"
+            : "Claim"
+        }
+      >
+         {collected ? "Claimed" : allActionsDone ? "Claim" : `Collect ${xpInfo.points} XP`}
+      </button>
+
+      {collectError && <p className="collect-error">{collectError}</p>}
+    </div>
+  </div>
+
+  <div
+    onClick={() => navigate(`/projects/${quest.project_id}`)}
+    className="bg-white/30 backdrop-blur-lg p-6 rounded-3xl border border-white/40 shadow-md flex items-center gap-6 cursor-pointer hover:bg-white/40 transition"
+  >
+    <img
+      src={quest.project.image_url || quest.project.logo || "/fallback.png"}
+      alt={quest.project.name}
+      className="w-16 h-16 rounded-full object-cover"
+    />
+    <div>
+      <h3 className="text-xl font-semibold text-gray-800 mb-1">{quest.project.name}</h3>
+      <p className="text-gray-700 text-sm leading-relaxed">{quest.project.description}</p>
+    </div>
+  </div>
+  {showLoginModal && (
+    <LoginModal onClose={() => setShowLoginModal(false)} />
+  )}
+</div>
       {showLoginModal && (
   <LoginModal onClose={() => setShowLoginModal(false)} />
 )}

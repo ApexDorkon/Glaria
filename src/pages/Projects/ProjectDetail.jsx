@@ -217,7 +217,7 @@ if (token) {
         }
         @keyframes shimmer {
           0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
+          100% { transform: translateX(450%); }
         }
       `}</style>
     </div>

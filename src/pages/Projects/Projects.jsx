@@ -190,13 +190,14 @@ export default function ProjectsPage() {
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
-        .animate-shimmer {
-          animation: shimmer 2s infinite linear;
-        }
-        @keyframes shimmer {
+           @keyframes shimmer {
           0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
+          100% { transform: translateX(400%); }
         }
+        .animate-shimmer {
+  animation: shimmer 3.5s ease-in-out infinite;
+}
+       
       `}</style>
     </div>
   );

@@ -94,15 +94,7 @@ export default function Home() {
           <FeaturedQuests />
         </motion.div>
 
-       <motion.div
-          ref={refNews}
-          initial={{ opacity: 0, y: 30 }}
-          animate={controlsNews}
-          className="w-full"
-        >
-          <News />
-        </motion.div>
-
+     
         <motion.div
           ref={refLeaderboard}
           initial={{ opacity: 0, y: 30 }}

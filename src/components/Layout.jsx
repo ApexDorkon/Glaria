@@ -1,6 +1,6 @@
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
-import GlariaLogo from "../assets/GlariaLogoName3.png";
+import GlariaLogo from "../assets/glariacircle.png";
 import SignupModal from "../components/SignupModal";
 
 export default function Layout({ children }) {
@@ -132,18 +132,46 @@ export default function Layout({ children }) {
           /* Mobile styles */
           md:flex-nowrap
         ">
-          {/* Logo and GLARIA text */}
-          <div
-            className="
-              flex items-center cursor-pointer space-x-3 flex-shrink-0
-              w-full justify-center mb-3 md:mb-0 md:w-auto md:justify-start
-            "
-            onClick={() => navigate("/")}
-          >
-            <img src={GlariaLogo} alt="Logo" className="w-12 h-12 sm:w-14 sm:h-14" />
-            <span className="text-lg sm:text-xl font-bold select-none whitespace-nowrap">GLARIA</span>
-          </div>
-
+{/* Logo and GLARIA text */}
+<div
+  className="
+    flex items-center cursor-pointer space-x-4 flex-shrink-0
+    w-full justify-center mb-3 md:mb-0 md:w-auto md:justify-start
+  "
+  onClick={() => navigate("/")}
+>
+ <div
+  className="
+    relative w-20 h-20 rounded-full
+    bg-gray-200/20 backdrop-blur-lg border border-gray-300/50
+    shadow-[inset_0_4px_8px_rgb(255_255_255_/_0.6),inset_0_-4px_6px_rgb(0_0_0_/_0.1)]
+    flex items-center justify-center
+    overflow-hidden
+    transition-transform transition-shadow duration-150 ease-in-out
+    hover:scale-95
+    hover:shadow-[inset_0_2px_4px_rgb(0_0_0_/_0.3),inset_0_-2px_4px_rgb(0_0_0_/_0.2)]
+  "
+>
+  {/* Glossy highlight */}
+  <div className="absolute top-0 left-0 w-full h-full rounded-full bg-gradient-to-tr from-white/40 via-white/60 to-transparent pointer-events-none" />
+  {/* Middle glossy highlight */}
+  <div
+    className="absolute inset-0 rounded-full bg-white/100 pointer-events-none"
+    style={{ filter: "blur(10px)" }}
+  />
+  {/* Inner shadow for depth */}
+  <div className="absolute inset-0 rounded-full shadow-[inset_0_8px_15px_rgb(0_0_0_/_0.15)] pointer-events-none" />
+  <img
+    src={GlariaLogo}
+    alt="Logo"
+    className="w-[4.5rem] h-[4.5rem] object-contain relative z-10"
+    style={{ maxWidth: "100%", maxHeight: "100%" }}
+  />
+</div>
+  <span className="text-lg sm:text-xl font-bold select-none whitespace-nowrap text-black">
+    GLARIA
+  </span>
+</div>
           {/* Nav links and profile/login */}
           <div className="
             flex
