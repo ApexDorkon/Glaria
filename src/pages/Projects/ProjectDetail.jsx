@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Leaderboard from "../../components/Leaderboard";
+
 export default function ProjectDetail() {
   const { projectId } = useParams();
   const navigate = useNavigate();
@@ -9,7 +10,8 @@ export default function ProjectDetail() {
   const [loading, setLoading] = useState(true);
   const [xpData, setXpData] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-const [leaderboardData, setLeaderboardData] = useState([]);
+  const [leaderboardData, setLeaderboardData] = useState([]);
+
   useEffect(() => {
     const fetchProjectAndQuests = async () => {
       try {
@@ -29,17 +31,7 @@ const [leaderboardData, setLeaderboardData] = useState([]);
           ...projectData,
           logo: projectData.image_url || "/fallback.png",
         });
-if (token) {
-        const leaderboardRes = await fetch(`https://glaria-api.onrender.com/projects/${projectId}/leaderboard`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (leaderboardRes.ok) {
-          const leaderboardJson = await leaderboardRes.json();
-          setLeaderboardData(leaderboardJson);
-        } else {
-          setLeaderboardData([]);
-        }
-      }
+
         // Fetch quests by project id (no auth needed)
         const questsRes = await fetch(`https://glaria-api.onrender.com/api/quests/by-project/${projectId}`);
         if (!questsRes.ok) throw new Error("Failed to fetch quests");
@@ -53,7 +45,6 @@ if (token) {
           projectName: projectData.name,
           projectLogo: projectData.image_url || "/fallback.png",
         }));
-
         setQuests(mappedQuests);
 
         // If authenticated, fetch XP info
@@ -67,7 +58,25 @@ if (token) {
           } else {
             setXpData(null);
           }
+
+          // Fetch leaderboard data for this project
+          const leaderboardRes = await fetch(`https://glaria-api.onrender.com/projects/projects/${projectId}/leaderboard`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (leaderboardRes.ok) {
+            const leaderboardJson = await leaderboardRes.json();
+            // Map the API response to Leaderboard expected format
+            const mappedLeaderboard = leaderboardJson.map(user => ({
+              username: user.twitter_username || "Unknown",
+              profilePhoto: user.nft_image_url || "/default-profile.png",
+              points: user.project_xp || 0,
+            }));
+            setLeaderboardData(mappedLeaderboard);
+          } else {
+            setLeaderboardData([]);
+          }
         }
+
       } catch (err) {
         console.error("Failed to fetch project or quests:", err);
         setProject(null);
@@ -97,8 +106,8 @@ if (token) {
   const totalXp = xpData?.total_project_xp || 0;
   const userClaimedXp = xpData?.user_claimed_xp || 0;
   const claimedPercent = totalXp ? Math.min(100, Math.round((userClaimedXp / totalXp) * 100)) : 0;
-
-  return (
+return (
+  <>
     <div className="w-full px-6 py-10 bg-white/30 backdrop-blur-md rounded-3xl border border-white/40 shadow-lg max-w-5xl mx-auto">
       {/* Project Header */}
       <div className="flex flex-col items-center justify-center bg-white/20 backdrop-blur-lg p-6 rounded-[2rem] shadow mb-8">
@@ -119,7 +128,6 @@ if (token) {
                 animation: "gradientShift 8s ease infinite",
               }}
             >
-              {/* Shimmer highlight */}
               <div className="absolute top-0 left-0 h-full w-20 bg-white/30 rounded-full animate-shimmer" />
             </div>
             <div className="absolute inset-0 flex items-center justify-center text-xs text-black/50 font-semibold select-none">
@@ -130,36 +138,7 @@ if (token) {
 
         {/* Social Links */}
         <div className="flex flex-wrap justify-center gap-4 mt-6">
-          {project.twitter_url && (
-            <a
-              href={project.twitter_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 rounded-full bg-white/30 backdrop-blur-md border border-white/40 hover:bg-white/50 transition text-sm font-medium"
-            >
-              Twitter
-            </a>
-          )}
-          {project.telegram_url && (
-            <a
-              href={project.telegram_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 rounded-full bg-white/30 backdrop-blur-md border border-white/40 hover:bg-white/50 transition text-sm font-medium"
-            >
-              Telegram
-            </a>
-          )}
-          {project.discord_url && (
-            <a
-              href={project.discord_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 rounded-full bg-white/30 backdrop-blur-md border border-white/40 hover:bg-white/50 transition text-sm font-medium"
-            >
-              Discord
-            </a>
-          )}
+          {/* ...social buttons */}
         </div>
       </div>
 
@@ -191,35 +170,36 @@ if (token) {
             </div>
           </div>
         ))}
-        {/* Leaderboard */}
-      {leaderboardData.length > 0 && (
-        <div className="mt-12">
-          <Leaderboard type="project" data={leaderboardData} />
-        </div>
-      )}
       </div>
-
-      <style>{`
-        @media (max-width: 768px) {
-          /* Make quests grid one column on mobile */
-          .grid-cols-3 {
-            grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
-          }
-        }
-
-        @keyframes gradientShift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        .animate-shimmer {
-          animation: shimmer 2s infinite linear;
-        }
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(450%); }
-        }
-      `}</style>
     </div>
-  );
+
+    {/* Leaderboard OUTSIDE the glass panel */}
+    {leaderboardData.length > 0 && (
+      <div className="mt-12 max-w-5xl mx-auto px-6">
+        <Leaderboard type="project" data={leaderboardData} projectName={project.name} />
+      </div>
+    )}
+
+    {/* Styles */}
+    <style>{`
+      @media (max-width: 768px) {
+        .grid-cols-3 {
+          grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+        }
+      }
+      @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      .animate-shimmer {
+        animation: shimmer 2s infinite linear;
+      }
+      @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(450%); }
+      }
+    `}</style>
+  </>
+);
 }

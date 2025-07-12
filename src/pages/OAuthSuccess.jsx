@@ -15,6 +15,7 @@ export default function OAuthSuccess() {
   // ✅ Always store token immediately
   useEffect(() => {
     if (accessToken) {
+        console.log("Access Token:", accessToken); 
       localStorage.setItem("access_token", accessToken);
     }
   }, [accessToken]);
@@ -79,37 +80,42 @@ export default function OAuthSuccess() {
   if (!twitterId || !twitterUsername) {
     return <div className="text-center mt-10 text-red-500">Missing Twitter info.</div>;
   }
+return (
+  <div className="min-h-screen flex items-start justify-center bg-[url('/bg-texture.jpg')] bg-cover bg-fixed bg-center bg-[#c2dafc] pt-16">
+    <div className="bg-white/20 backdrop-blur-3xl rounded-3xl shadow-lg max-w-sm w-full p-10 border border-white/40">
+      <h2 className="text-2xl font-bold text-center mb-8 text-gray-900 drop-shadow-md">
+        Sign up to <span className="text-indigo-600">Glaria</span>
+      </h2>
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-100 to-blue-200">
-      <div className="bg-white/50 backdrop-blur-xl p-8 rounded-3xl shadow-md max-w-sm w-full">
-        <h2 className="text-xl font-bold text-center mb-6 text-white">Sign up to Glaria</h2>
+      <label className="block text-gray-800 text-sm mb-2 font-semibold">
+        Set up your Username
+      </label>
+      <input
+        type="text"
+        className="w-full p-3 mb-6 rounded-xl bg-white/90 text-gray-900 placeholder-gray-500 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 transition"
+        placeholder="Your Glaria username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+      />
 
-        <label className="text-white text-sm mb-1 block">Set up your Username</label>
-        <input
-          type="text"
-          className="w-full p-2 rounded-lg mb-4 bg-white/80 text-black placeholder-gray-500"
-          placeholder="Your Glaria username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
+      <label className="block text-gray-800 text-sm mb-2 font-semibold">
+        Verify email (optional)
+      </label>
+      <input
+        type="email"
+        className="w-full p-3 mb-8 rounded-xl bg-white/90 text-gray-900 placeholder-gray-500 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 transition"
+        placeholder="you@example.com"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
 
-        <label className="text-white text-sm mb-1 block">Verify email (optional)</label>
-        <input
-          type="email"
-          className="w-full p-2 rounded-lg mb-6 bg-white/80 text-black placeholder-gray-500"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-
-        <button
-          onClick={handleSubmit}
-          className="w-full py-3 rounded-full bg-white text-black font-bold hover:bg-gray-100 transition"
-        >
-          Sign Up
-        </button>
-      </div>
+      <button
+        onClick={handleSubmit}
+        className="w-full py-3 rounded-full bg-indigo-600 hover:bg-indigo-700 transition text-white font-bold shadow-md drop-shadow-md"
+      >
+        Sign Up
+      </button>
     </div>
-  );
+  </div>
+);
 }

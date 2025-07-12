@@ -106,7 +106,7 @@ export default function CreateProjectModal({ onClose }) {
         {/* Step 1 */}
         {step === 1 && (
           <div className="text-center">
-            <p className="mb-6 text-white font-semibold text-lg">
+            <p className="mb-6 text-gray-900 font-semibold text-lg">
               Let's connect your project's X account
             </p>
             <button

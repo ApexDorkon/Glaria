@@ -102,11 +102,7 @@ export default function Home() {
           className="w-full flex justify-center"
         >
           {/* Show loading message or leaderboard */}
-          {loadingLeaderboard ? (
-            <p className="text-gray-700">Loading leaderboard...</p>
-          ) : (
-            <Leaderboard type="general" data={leaderboardData} />
-          )}
+          <Leaderboard type="general" data={leaderboardData} loading={loadingLeaderboard} />
         </motion.div>
 
       </div>

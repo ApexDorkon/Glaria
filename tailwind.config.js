@@ -5,7 +5,13 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {colors: {
+        glariaYellow: {
+          DEFAULT: '#FFD97E',
+          light: '#FFE4AA',
+          dark: '#FFC850',
+        },
+      },},
   },
   plugins: [],
 }

@@ -5,52 +5,79 @@ export default function FeaturedQuests() {
   const navigate = useNavigate();
   const containerRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [quests, setQuests] = useState([]);
+  // Store XP info per quest id as object { questId: { quest_id, points, project_points } }
+  const [questXpMap, setQuestXpMap] = useState({});
   let scrollTimeout = null;
 
-  const quests = [
-    {
-      id: 1,
-      description: "Verify on X",
-      projectName: "Project X",
-      projectLogo: "/logo.png",
-      xp: 30,
-    },
-    {
-      id: 2,
-      description: "Join Discord",
-      projectName: "GammaDAO",
-      projectLogo: "/logo.png",
-      xp: 25,
-    },
-    {
-      id: 3,
-      description: "Mint Character",
-      projectName: "ZetaChain",
-      projectLogo: "/logo.png",
-      xp: 50,
-    },
-    {
-      id: 4,
-      description: "Connect Wallet",
-      projectName: "OmniFi",
-      projectLogo: "/logo.png",
-      xp: 15,
-    },
-    {
-      id: 5,
-      description: "Retweet Announcement",
-      projectName: "NovaLaunch",
-      projectLogo: "/logo.png",
-      xp: 20,
-    },
-    {
-      id: 6,
-      description: "Vote in Snapshot",
-      projectName: "MetaGov",
-      projectLogo: "/logo.png",
-      xp: 40,
-    },
-  ];
+  // Fetch project details for quests
+  const fetchProjectDetails = async (questsData) => {
+    try {
+      const questsWithProjects = await Promise.all(
+        questsData.map(async (quest) => {
+          const res = await fetch(`https://glaria-api.onrender.com/projects/${quest.project_id}`);
+          if (!res.ok) throw new Error("Failed to fetch project");
+          const project = await res.json();
+          return { ...quest, project };
+        })
+      );
+      setQuests(questsWithProjects);
+
+      // After setting quests, fetch XP for each quest
+      fetchXpForQuests(questsWithProjects);
+    } catch (err) {
+      console.error("Error fetching project details:", err);
+      setQuests(questsData); // fallback without projects
+    }
+  };
+
+  // Fetch XP for each quest and parse project_points from JSON string
+  const fetchXpForQuests = async (questsWithProjects) => {
+    try {
+      const xpEntries = await Promise.all(
+        questsWithProjects.map(async (quest) => {
+          try {
+            const res = await fetch(`https://glaria-api.onrender.com/api/quests/xp-by-quest/${quest.id}`);
+            if (!res.ok) throw new Error("Failed to fetch XP");
+            const xpText = await res.text(); // API returns a JSON string, e.g. '{"quest_id":2,"points":200,"project_points":300}'
+            let xpObj;
+            try {
+              xpObj = JSON.parse(xpText);
+            } catch {
+              xpObj = null;
+            }
+            // Return project_points if available, else points, else 0
+            const xpValue = xpObj?.project_points ?? xpObj?.points ?? "0";
+            return [quest.id, xpValue];
+          } catch (err) {
+            console.error(`Failed to fetch XP for quest ${quest.id}`, err);
+            return [quest.id, "0"]; // default XP 0 on error
+          }
+        })
+      );
+      const xpMap = Object.fromEntries(xpEntries);
+      setQuestXpMap(xpMap);
+    } catch (err) {
+      console.error("Failed to fetch XP for quests:", err);
+    }
+  };
+
+  // Fetch 6 random quests from API on mount
+  useEffect(() => {
+    const fetchRandomQuests = async () => {
+      try {
+        const res = await fetch("https://glaria-api.onrender.com/api/quests/quests/random");
+        if (!res.ok) throw new Error("Failed to fetch quests");
+        const data = await res.json();
+        const firstSix = data.slice(0, 6);
+        await fetchProjectDetails(firstSix);
+      } catch (err) {
+        console.error("Error loading quests:", err);
+      }
+    };
+
+    fetchRandomQuests();
+  }, []);
 
   // Detect mobile screen width
   useEffect(() => {
@@ -69,14 +96,11 @@ export default function FeaturedQuests() {
       const container = containerRef.current;
       if (!container) return;
 
-      // Card width including gap (approx)
-      const cardWidth = container.firstChild.offsetWidth + 16; // 16px gap approx
+      const cardWidth = container.firstChild.offsetWidth + 16; // gap approx
 
-      // Calculate nearest snap position
       const scrollLeft = container.scrollLeft;
       const snapIndex = Math.round(scrollLeft / cardWidth);
 
-      // Snap scroll
       container.scrollTo({
         left: snapIndex * cardWidth,
         behavior: "smooth",
@@ -90,12 +114,13 @@ export default function FeaturedQuests() {
     };
   }, []);
 
+  if (quests.length === 0) return null;
+
   return (
     <div className="w-full px-4 sm:px-6 md:px-10 py-6 sm:py-10 bg-white/30 backdrop-blur-md rounded-3xl border border-white/40 shadow-lg featured-quests-glass">
       <h2 className="text-lg font-semibold mb-6">FEATURED QUESTS</h2>
 
       {isMobile ? (
-        // Mobile horizontal scroll with snapping
         <div
           ref={containerRef}
           onScroll={handleScroll}
@@ -103,7 +128,7 @@ export default function FeaturedQuests() {
           style={{
             display: "grid",
             gridAutoFlow: "column",
-            gridAutoColumns: "65vw", // mobile card width
+            gridAutoColumns: "65vw",
             gap: "1rem",
             overflowX: "auto",
             scrollSnapType: "x mandatory",
@@ -124,28 +149,37 @@ export default function FeaturedQuests() {
               }}
             >
               <p className="text-base sm:text-xl font-semibold text-gray-800 leading-snug">
-                {quest.description}
+                {quest.title || quest.description}
               </p>
-              <div className="flex justify-between items-end mt-4">
-                <div className="flex items-center gap-2">
-                  <img
-                    src={quest.projectLogo}
-                    alt={quest.projectName}
-                    className="w-5 h-5 sm:w-6 sm:h-6 rounded-full"
-                  />
-                  <span className="text-xs sm:text-sm font-medium text-gray-700">
-                    {quest.projectName}
+              <p className="text-sm text-gray-700 mt-1 mb-4">{quest.description}</p>
+
+              {quest.project && (
+                <div className="flex justify-between items-end mt-auto">
+                  <div
+                    className="flex items-center gap-2 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/projects/${quest.project_id}`);
+                    }}
+                  >
+                    <img
+                      src={quest.project.image_url || "/default-project.png"}
+                      alt={quest.project.name}
+                      className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover"
+                    />
+                    <span className="text-xs sm:text-sm font-medium text-gray-700">
+                      {quest.project.name}
+                    </span>
+                  </div>
+                  <span className="text-xs font-semibold bg-white/60 backdrop-blur-md px-2 py-1 rounded-full shadow text-gray-900">
+                    +{questXpMap[quest.id] || "0"} XP
                   </span>
                 </div>
-                <div className="bg-white/60 backdrop-blur-md px-2 py-1 rounded-full shadow text-xs font-semibold text-gray-900">
-                  +{quest.xp} XP
-                </div>
-              </div>
+              )}
             </div>
           ))}
         </div>
       ) : (
-        // Desktop grid (original)
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 featured-quests-grid">
           {quests.map((quest) => (
             <div
@@ -154,23 +188,33 @@ export default function FeaturedQuests() {
               className="aspect-[4/3] rounded-xl bg-white/50 border border-white/30 shadow-inner p-4 sm:p-6 flex flex-col justify-between hover:scale-[1.02] transition duration-300 ease-in-out cursor-pointer"
             >
               <p className="text-base sm:text-xl font-semibold text-gray-800 leading-snug">
-                {quest.description}
+                {quest.title || quest.description}
               </p>
-              <div className="flex justify-between items-end mt-4">
-                <div className="flex items-center gap-2">
-                  <img
-                    src={quest.projectLogo}
-                    alt={quest.projectName}
-                    className="w-5 h-5 sm:w-6 sm:h-6 rounded-full"
-                  />
-                  <span className="text-xs sm:text-sm font-medium text-gray-700">
-                    {quest.projectName}
+            
+
+              {quest.project && (
+                <div className="flex justify-between items-end mt-auto">
+                  <div
+                    className="flex items-center gap-2 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/projects/${quest.project_id}`);
+                    }}
+                  >
+                    <img
+                      src={quest.project.image_url || "/default-project.png"}
+                      alt={quest.project.name}
+                      className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover"
+                    />
+                    <span className="text-xs sm:text-sm font-medium text-gray-700">
+                      {quest.project.name}
+                    </span>
+                  </div>
+                  <span className="text-xs font-semibold bg-white/60 backdrop-blur-md px-2 py-1 rounded-full shadow text-gray-900">
+                    +{questXpMap[quest.id] || "0"} XP
                   </span>
                 </div>
-                <div className="bg-white/60 backdrop-blur-md px-2 py-1 rounded-full shadow text-xs font-semibold text-gray-900">
-                  +{quest.xp} XP
-                </div>
-              </div>
+              )}
             </div>
           ))}
         </div>

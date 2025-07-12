@@ -1,97 +1,106 @@
 import glassMan from "../../assets/glassMan.png";
 import React, { useEffect, useState } from "react";
-import CreateProfile from "./CreateProfile";
+import { useNavigate, Link } from "react-router-dom";
 import GlariaQuests from "../Quests/GlariaQuests";
+import LoginModal from "../../components/LoginModal";
 
 export default function Profile() {
+  const navigate = useNavigate();
+
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [completedQuests, setCompletedQuests] = useState(0);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // Fetch user and quests on mount
+  const fetchUserAndCompletedQuests = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      if (!token) throw new Error("No access token");
+
+      const resUser = await fetch("https://glaria-api.onrender.com/api/me", {
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+      });
+
+      if (resUser.status === 404) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+
+      if (!resUser.ok) throw new Error("Failed to fetch user info");
+
+      const userData = await resUser.json();
+      setUser(userData);
+
+      const resQuests = await fetch("https://glaria-api.onrender.com/api/quests/completed", {
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+      });
+
+      if (resQuests.ok) {
+        const questsData = await resQuests.json();
+        setCompletedQuests(questsData.total_claimed_quests || 0);
+      } else {
+        setCompletedQuests(0);
+      }
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setNotFound(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchUserAndCompletedQuests = async () => {
-      try {
-        const token = localStorage.getItem("access_token");
-        if (!token) throw new Error("No access token");
-
-        // Fetch user info
-        const resUser = await fetch("https://glaria-api.onrender.com/api/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        });
-
-        if (resUser.status === 404) {
-          setNotFound(true);
-          setLoading(false);
-          return;
-        }
-
-        if (!resUser.ok) {
-          throw new Error("Failed to fetch user info");
-        }
-
-        const userData = await resUser.json();
-        setUser(userData);
-
-        // Fetch completed quests count
-        const resQuests = await fetch("https://glaria-api.onrender.com/api/quests/completed", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        });
-
-        if (resQuests.ok) {
-          const questsData = await resQuests.json();
-          setCompletedQuests(questsData.total_claimed_quests || 0);
-        } else {
-          console.warn("Failed to fetch completed quests count");
-          setCompletedQuests(0);
-        }
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setNotFound(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchUserAndCompletedQuests();
   }, []);
 
-  // Frosted Skeleton Loader
+  // Function to update user XP and completed quests count dynamically
+  const updateUserStats = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      if (!token) return;
+
+      // Update user info (especially XP)
+      const resUser = await fetch("https://glaria-api.onrender.com/api/me", {
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+      });
+      if (resUser.ok) {
+        const userData = await resUser.json();
+        setUser(userData);
+      }
+
+      // Update completed quests count
+      const resQuests = await fetch("https://glaria-api.onrender.com/api/quests/completed", {
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+      });
+      if (resQuests.ok) {
+        const questsData = await resQuests.json();
+        setCompletedQuests(questsData.total_claimed_quests || 0);
+      }
+    } catch (err) {
+      console.error("Error updating user stats:", err);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    setUser(null);
+    window.dispatchEvent(new Event("storage"));
+    navigate("/");
+  };
+
   if (loading) {
     return (
       <div className="relative min-h-screen w-full overflow-auto bg-[url('/bg-texture.jpg')] bg-cover bg-fixed bg-center bg-[#c2dafc]">
         <div className="absolute inset-0 bg-white/10 backdrop-blur-[2px] z-0 pointer-events-none" />
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-12 py-12 flex flex-col items-center gap-8 animate-pulse">
-          <div className="flex flex-col lg:flex-row items-start justify-start gap-12 w-full ml-20">
-            <div className="flex flex-col items-center gap-4">
-              <div className="w-48 h-48 rounded-full bg-white/30 backdrop-blur-md border border-white/50 shadow-xl" />
-              <div className="h-6 w-40 bg-white/30 rounded-full backdrop-blur-md" />
-            </div>
-
-            <div className="flex flex-col sm:flex-row lg:flex-col gap-8 w-full lg:w-auto">
-              <div className="min-w-[480px] h-40 rounded-3xl bg-white/20 backdrop-blur-md border border-white/40 shadow-xl" />
-              <div className="min-w-[480px] h-40 rounded-3xl bg-white/20 backdrop-blur-md border border-white/40 shadow-xl" />
-            </div>
-          </div>
-
-          <div className="w-full rounded-3xl bg-white/20 backdrop-blur-md border border-white/40 shadow-xl p-6 flex flex-col items-center gap-4">
-            <div className="w-64 h-12 bg-white/30 rounded-full backdrop-blur-sm" />
-            <div className="w-48 h-12 bg-white/30 rounded-full backdrop-blur-sm" />
-          </div>
-
-          <div className="w-full h-14 rounded-3xl bg-white/20 backdrop-blur-lg border border-white/40 shadow-xl" />
-        </div>
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-12 py-12 flex flex-col items-center gap-8 animate-pulse" />
       </div>
     );
   }
 
-  if (notFound || !user) return <CreateProfile />;
+  if (notFound || !user) return <LoginModal />;
 
   return (
     <div className="relative min-h-screen w-full overflow-auto bg-[url('/bg-texture.jpg')] bg-cover bg-fixed bg-center bg-[#c2dafc]">
@@ -100,16 +109,58 @@ export default function Profile() {
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-12 py-12 flex flex-col items-center gap-8 text-gray-900">
 
         <div className="flex flex-col lg:flex-row items-center lg:items-start justify-start gap-8 lg:gap-12 w-full ml-0 lg:ml-20">
-          {/* Avatar and Name */}
-          <div className="flex flex-col items-center gap-4">
+          {/* Avatar and Username */}
+          <div className="flex flex-col items-center gap-2 relative">
             <img
               src={glassMan}
               alt="Avatar"
               className="w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 rounded-full border-4 border-white shadow-xl"
             />
-            <h2 className="text-3xl sm:text-4xl font-semibold tracking-wide text-center lg:text-left">
-              {user.username || user.twitter_username}
-            </h2>
+            <p className="text-lg font-semibold text-gray-900 select-text">{user.username}</p>
+
+            {/* Settings Button */}
+            <button
+              onClick={() => setSettingsOpen(!settingsOpen)}
+              className="absolute top-0 right-0 bg-white/70 rounded-full p-2 shadow hover:bg-white cursor-pointer"
+              aria-label="Settings"
+              title="Settings"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 text-gray-700"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 8c-2.21 0-4 1.79-4 4 0 2.21 1.79 4 4 4s4-1.79 4-4c0-2.21-1.79-4-4-4zm0 0v-2m0 10v-2m4-6l1.414-1.414M6 16l-1.414 1.414M18 12h2M4 12H2m15.364 6.364l1.414 1.414M6.222 6.222L4.808 4.808"
+                />
+              </svg>
+            </button>
+
+            {settingsOpen && (
+              <div className="absolute top-14 right-0 bg-white rounded-lg shadow-lg border border-gray-300 w-40 z-50 flex flex-col">
+                <Link
+                  to="/profile/edit"
+                  className="px-4 py-2 hover:bg-gray-100 text-gray-900 cursor-pointer"
+                  onClick={() => setSettingsOpen(false)}
+                >
+                  Edit Profile
+                </Link>
+                <button
+                  className="px-4 py-2 hover:bg-gray-100 text-gray-900 text-left cursor-pointer"
+                  onClick={() => {
+                    setSettingsOpen(false);
+                    handleLogout();
+                  }}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Stats Section */}
@@ -144,7 +195,8 @@ export default function Profile() {
           </div>
         </div>
 
-        <GlariaQuests />
+        {/* Pass update function down to GlariaQuests */}
+        <GlariaQuests updateUserStats={updateUserStats} />
 
         {/* Connect Buttons Container */}
         <div className="w-full rounded-3xl bg-white/10 backdrop-blur-lg border border-white/50 shadow-2xl p-6 flex flex-col items-center gap-4">
@@ -155,7 +207,7 @@ export default function Profile() {
             >
               <span className="text-lg">X</span>
               <span className="text-sm font-semibold tracking-wide">
-               <span className="text-white font-bold">@{user.twitter_username}</span>
+                <span className="text-white font-bold">@{user.twitter_username}</span>
               </span>
             </button>
           ) : (

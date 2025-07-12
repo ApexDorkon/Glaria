@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function Leaderboard({ type = "general", data = [], loading = false }) {
+export default function Leaderboard({ type = "general", data = [], loading = false, projectName = "" }) {
   // Limit max visible rows height based on approx row height (~56px * 5 = 280px)
   const maxVisibleRows = 5;
   const rowHeight = 56; // approx height for each table row including padding
@@ -74,7 +74,7 @@ export default function Leaderboard({ type = "general", data = [], loading = fal
   return (
     <div className="w-full max-w-[1440px] mx-auto bg-white/20 backdrop-blur-xl rounded-[3rem] border border-white/30 shadow-lg p-8 shadow-white/20">
       <h2 className="text-2xl font-bold mb-8 text-gray-900">
-        {type === "general" ? "Top Glarians" : "Project Leaderboard"}
+        {type === "general" ? "Top Glarians" : `${projectName} Leaderboard`}
       </h2>
 
       {/* Header table with top rounded corners */}
@@ -89,7 +89,7 @@ export default function Leaderboard({ type = "general", data = [], loading = fal
             <th className="py-4 px-6 font-semibold">No.</th>
             <th className="py-4 px-6 font-semibold">User</th>
             <th className="py-4 px-6 font-semibold text-right">
-              {type === "general" ? "GLARIA" : "(Project)"} XP
+              {type === "general" ? "GLARIA" : `${projectName}`} XP
             </th>
           </tr>
         </thead>
