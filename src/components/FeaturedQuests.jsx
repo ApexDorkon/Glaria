@@ -6,6 +6,7 @@ export default function FeaturedQuests() {
   const containerRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
   const [quests, setQuests] = useState([]);
+  const [loading, setLoading] = useState(true);  // Added loading state
   // Store XP info per quest id as object { questId: { quest_id, points, project_points } }
   const [questXpMap, setQuestXpMap] = useState({});
   let scrollTimeout = null;
@@ -28,6 +29,8 @@ export default function FeaturedQuests() {
     } catch (err) {
       console.error("Error fetching project details:", err);
       setQuests(questsData); // fallback without projects
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -65,6 +68,7 @@ export default function FeaturedQuests() {
   // Fetch 6 random quests from API on mount
   useEffect(() => {
     const fetchRandomQuests = async () => {
+      setLoading(true);
       try {
         const res = await fetch("https://glaria-api.onrender.com/api/quests/quests/random");
         if (!res.ok) throw new Error("Failed to fetch quests");
@@ -73,6 +77,7 @@ export default function FeaturedQuests() {
         await fetchProjectDetails(firstSix);
       } catch (err) {
         console.error("Error loading quests:", err);
+        setLoading(false);
       }
     };
 
@@ -114,7 +119,23 @@ export default function FeaturedQuests() {
     };
   }, []);
 
-  if (quests.length === 0) return null;
+  // Show skeleton loader if loading or quests are empty
+  if (loading || quests.length === 0) {
+    return (
+      <div className="w-full px-4 sm:px-6 md:px-10 py-6 sm:py-10 rounded-3xl border border-white/40 shadow-lg featured-quests-glass bg-white/30 backdrop-blur-md">
+        <h2 className="text-lg font-semibold mb-6">FEATURED QUESTS</h2>
+        <div className={isMobile ? "grid grid-flow-col auto-cols-[65vw] gap-4 overflow-x-auto scroll-smooth" : "grid grid-cols-2 md:grid-cols-3 gap-4"}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="aspect-[4/3] rounded-xl bg-gray-300 animate-pulse border border-gray-400 shadow-inner p-4 sm:p-6"
+              style={{ minWidth: isMobile ? "65vw" : "auto" }}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full px-4 sm:px-6 md:px-10 py-6 sm:py-10 bg-white/30 backdrop-blur-md rounded-3xl border border-white/40 shadow-lg featured-quests-glass">
@@ -190,7 +211,6 @@ export default function FeaturedQuests() {
               <p className="text-base sm:text-xl font-semibold text-gray-800 leading-snug">
                 {quest.title || quest.description}
               </p>
-            
 
               {quest.project && (
                 <div className="flex justify-between items-end mt-auto">

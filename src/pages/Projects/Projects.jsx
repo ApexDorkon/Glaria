@@ -155,11 +155,11 @@ export default function ProjectsPage() {
           the Sophon ecosystem.
         </p>
         <button
-          onClick={() => setShowCreateModal(true)}
-          className="px-6 py-3 rounded-full bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-700 transition"
-        >
-          + Create Your Project
-        </button>
+  onClick={() => window.open("https://t.me/glariaxyz", "_blank")}
+  className="px-6 py-3 rounded-full bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-700 transition"
+>
+  + Create Your Project
+</button>
       </div>
 
       {showCreateModal && (

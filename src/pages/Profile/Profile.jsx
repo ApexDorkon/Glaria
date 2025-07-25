@@ -141,26 +141,7 @@ export default function Profile() {
               </svg>
             </button>
 
-            {settingsOpen && (
-              <div className="absolute top-14 right-0 bg-white rounded-lg shadow-lg border border-gray-300 w-40 z-50 flex flex-col">
-                <Link
-                  to="/profile/edit"
-                  className="px-4 py-2 hover:bg-gray-100 text-gray-900 cursor-pointer"
-                  onClick={() => setSettingsOpen(false)}
-                >
-                  Edit Profile
-                </Link>
-                <button
-                  className="px-4 py-2 hover:bg-gray-100 text-gray-900 text-left cursor-pointer"
-                  onClick={() => {
-                    setSettingsOpen(false);
-                    handleLogout();
-                  }}
-                >
-                  Logout
-                </button>
-              </div>
-            )}
+            
           </div>
 
           {/* Stats Section */}
@@ -226,11 +207,19 @@ export default function Profile() {
           </button>
         </div>
 
-        {/* Generate AI Character */}
+        {/* Generate AI Identity */}
         <button className="w-full rounded-3xl bg-white/10 backdrop-blur-lg border border-white/50 py-5 text-lg font-semibold shadow-2xl hover:bg-white/50 transition">
-          Generate AI Character
+          Generate AI Identity (Comming Soon)
         </button>
+ {/* Logout button at the bottom */}
+          <button
+            onClick={handleLogout}
+            className="px-6 py-2 w-48 text-sm font-medium rounded-full bg-red-600 hover:bg-red-700 text-white shadow mt-4"
+          >
+            Logout
+          </button>
       </div>
+      
     </div>
   );
 }

@@ -45,7 +45,7 @@ export default function LoginModal() {
             className="w-full py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition"
             onClick={handleWalletLogin}
           >
-            Login using Wallet
+            Login using  (Coming Soon)
           </button>
         </div>
       </div>

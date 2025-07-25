@@ -88,32 +88,38 @@ const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Handle action button click (start timer)
   const handleActionClick = (actionId, url) => {
-      if (!localStorage.getItem("access_token")) {
+  if (!localStorage.getItem("access_token")) {
     setShowLoginModal(true);
     return;
   }
-    const currentState = actionStates[actionId];
-    if (currentState.status === "idle") {
-      const countdown = 10;
-      setActionStates(prev => ({
-        ...prev,
-        [actionId]: { status: "inProgress", timer: countdown, shake: false },
-      }));
+  const currentState = actionStates[actionId];
+  if (currentState.status === "idle") {
+    const countdown = 10;
+    setActionStates(prev => ({
+      ...prev,
+      [actionId]: { status: "inProgress", timer: countdown, shake: false },
+    }));
 
-      timers.current[actionId] = setInterval(() => {
-        setActionStates(prev => {
-          const newTimer = prev[actionId].timer - 1;
-          if (newTimer <= 0) {
-            clearInterval(timers.current[actionId]);
-            return { ...prev, [actionId]: { ...prev[actionId], timer: 0 } };
-          }
-          return { ...prev, [actionId]: { ...prev[actionId], timer: newTimer } };
-        });
-      }, 1000);
+    timers.current[actionId] = setInterval(() => {
+      setActionStates(prev => {
+        const newTimer = prev[actionId].timer - 1;
+        if (newTimer <= 0) {
+          clearInterval(timers.current[actionId]);
+          return { ...prev, [actionId]: { ...prev[actionId], timer: 0 } };
+        }
+        return { ...prev, [actionId]: { ...prev[actionId], timer: newTimer } };
+      });
+    }, 1000);
 
-      window.open(url, "_blank");
+    // Fix here: make sure URL is absolute
+    let fullUrl = url;
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      fullUrl = "https://" + url;
     }
-  };
+
+    window.open(fullUrl, "_blank");
+  }
+};
 
   // Handle reload button click
   const handleReloadClick = (actionId, e) => {
