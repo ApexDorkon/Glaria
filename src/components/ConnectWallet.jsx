@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ethers } from "ethers";
 
-export default function ConnectWallet({ onClose, onConnected }) {
+export default function ConnectWallet({ onClose, onConnected, updateUserStats }) {
   const [error, setError] = useState(null);
   const [connecting, setConnecting] = useState(false);
 
@@ -15,8 +15,10 @@ export default function ConnectWallet({ onClose, onConnected }) {
       setConnecting(true);
       setError(null);
 
+      // ✅ Request account access explicitly
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+
       const provider = new ethers.BrowserProvider(window.ethereum);
-      await provider.send("eth_requestAccounts", []);
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
 
@@ -27,21 +29,37 @@ export default function ConnectWallet({ onClose, onConnected }) {
       const message = `Sign this nonce to authenticate: ${nonce}`;
       const signature = await signer.signMessage(message);
 
+      const token = localStorage.getItem("access_token");
+      if (!token) throw new Error("Access token not found. Please log in first.");
+
       const loginRes = await fetch("https://glaria-api.onrender.com/api/auth/wallet-login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ address, signature }),
       });
 
       if (!loginRes.ok) {
         const errData = await loginRes.json();
-        throw new Error(errData.detail || "Login failed");
+        throw new Error(errData.detail || "Wallet login failed");
       }
 
-      const loginData = await loginRes.json();
-      onConnected({ address, signature });
+      onConnected?.({ address, signature });
+      updateUserStats?.();
+      onClose();
     } catch (err) {
       console.error(err);
+
+      // ✅ Silent fail for MetaMask rejection
+      if (
+        err.code === "ACTION_REJECTED" ||
+        err?.message?.includes("User rejected")
+      ) {
+        return;
+      }
+
       setError(err.message || "Something went wrong.");
     } finally {
       setConnecting(false);
@@ -70,11 +88,11 @@ export default function ConnectWallet({ onClose, onConnected }) {
         </button>
 
         <button
-  onClick={onClose}
-  className="mt-4 px-4 py-2 rounded-full text-sm font-medium text-gray-600 border border-gray-300 hover:bg-gray-100 hover:text-black transition"
->
-  Cancel
-</button>
+          onClick={onClose}
+          className="mt-4 px-4 py-2 rounded-full text-sm font-medium text-gray-600 border border-gray-300 hover:bg-gray-100 hover:text-black transition"
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );

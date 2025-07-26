@@ -225,13 +225,15 @@ export default function Profile() {
     )}
   </>
 ) : (
-  <button
-    disabled
-    className="flex items-center justify-center gap-2 w-48 sm:w-64 px-5 py-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white/90 font-semibold shadow-md border border-white/20 cursor-default"
-  >
-    <span className="text-xs">🔗</span>
-    <span className="text-sm break-all">{user.wallet_address}</span>
-  </button>
+ <button
+  disabled
+  className="flex items-center justify-center gap-2 w-48 sm:w-64 px-5 py-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white/90 font-semibold shadow-md border border-white/20 cursor-default"
+>
+  <span className="text-xs">🔗</span>
+  <span className="text-sm break-all">
+    {user.wallet_address.slice(0, 6)}...{user.wallet_address.slice(-4)}
+  </span>
+</button>
 )}
         </div>
 
