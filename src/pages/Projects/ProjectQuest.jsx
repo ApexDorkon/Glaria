@@ -391,7 +391,7 @@ const [showLoginModal, setShowLoginModal] = useState(false);
           <span className="value">{xpInfo.points}</span>
         </div>
         <div className="xp-pill">
-          <span className="label">Project XP:</span>
+          <span className="label">{quest?.project?.name || "Project"} XP:</span>
           <span className="value">{xpInfo.project_points}</span>
         </div>
       </div>

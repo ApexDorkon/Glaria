@@ -9,7 +9,7 @@ import Projects from "./pages/Projects/Projects";
 import Quests from "./pages/Quests/Quests";
 import ProjectDetail from "./pages/Projects/ProjectDetail";
 import CreateProfile from "./pages/Profile/CreateProfile";
-import TwitterCallback from "./pages/Auth/TwitterCallback";
+
 import OAuthSuccess from "./pages/OAuthSuccess";
 import { ResponsiveProvider } from './context/ResponsiveContext';
 
@@ -25,7 +25,7 @@ export default function App() {
             <Route path="/projects" element={<Projects />} />
             <Route path="/quests/:questId" element={<ProjectQuest />} />
             <Route path="/projects/:projectId" element={<ProjectDetail />} />
-            <Route path="/auth/twitter/callback" element={<TwitterCallback />} />
+            
             <Route path="/oauth-success" element={<OAuthSuccess />} />
             <Route path="/create-profile" element={<CreateProfile />} />
           </Routes>

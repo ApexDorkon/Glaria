@@ -2,6 +2,8 @@ import { Outlet, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import GlariaLogo from "../assets/glariacircle.png";
 import SignupModal from "../components/SignupModal";
+import ConnectWallet from "../components/ConnectWallet";
+import { ethers } from "ethers";
 import dummyPP from "../assets/glassMan.png"; // Placeholder profile picture
 export default function Layout({ children }) {
   const navigate = useNavigate();
@@ -12,7 +14,7 @@ export default function Layout({ children }) {
   const [twitterUser, setTwitterUser] = useState(null);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
-
+const [showWalletConnect, setShowWalletConnect] = useState(false);
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (token) setIsAuthenticated(true);
@@ -75,10 +77,11 @@ export default function Layout({ children }) {
   };
 
   const handleWalletLogin = () => {
-    setTwitterUser(null);
-    setShowSignupModal(true);
-    setShowLoginOptions(false);
-  };
+    console.log("Wallet login button clicked");
+  setTwitterUser(null);
+  setShowWalletConnect(true);
+  setShowLoginOptions(false);
+};
 useEffect(() => {
   const onStorageChange = () => {
     const token = localStorage.getItem("access_token");
@@ -253,7 +256,51 @@ useEffect(() => {
           />
         )}
       </div>
+{showWalletConnect && (
+  <ConnectWallet
+    onClose={() => {
+      console.log("Wallet connection modal closed");
+      setShowWalletConnect(false);
+    }}
+    onConnected={async ({ address, signature }) => {
+      console.log("Wallet connected callback called");
+      setShowWalletConnect(false);
 
+      console.log("Wallet address:", address);
+      console.log("Signature:", signature);
+
+      try {
+        const res = await fetch("https://glaria-api.onrender.com/api/auth/wallet-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ address, signature }),
+        });
+
+        console.log("Sent wallet login data to backend");
+
+        if (!res.ok) {
+          throw new Error("Wallet login failed");
+        }
+
+        const data = await res.json();
+        console.log("Backend response:", data);
+
+        if (data.access_token) {
+          localStorage.setItem("access_token", data.access_token);
+          setIsAuthenticated(true);
+          navigate("/profile");
+          console.log("Wallet login successful, user authenticated");
+        } else {
+          console.warn("Wallet login failed: No access token");
+          alert("Wallet login failed: No access token");
+        }
+      } catch (error) {
+        console.error("Wallet login error:", error);
+        alert(error.message || "Wallet login failed");
+      }
+    }}
+  />
+)}
       {/* Login Options Modal */}
       {showLoginOptions && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -271,12 +318,7 @@ useEffect(() => {
             >
               Login using X
             </button>
-            <button
-              className="w-full py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition"
-              onClick={handleWalletLogin}
-            >
-              Login using Wallet (Coming Soon)
-            </button>
+            
           </div>
         </div>
       )}

@@ -6,6 +6,14 @@ export default function TwitterCallback({ setTwitterUser, setShowSignupModal, se
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
+
+    const error = urlParams.get("error");
+    if (error === "access_denied") {
+      // Redirect user away if they denied access
+      window.location.href = "https://www.glaria.xyz";
+      return;
+    }
+
     const code = urlParams.get("code");
     const state = urlParams.get("state");
 

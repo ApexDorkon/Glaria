@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import GlariaQuests from "../Quests/GlariaQuests";
 import LoginModal from "../../components/LoginModal";
-
+import ConnectWallet from "../../components/ConnectWallet";
 export default function Profile() {
   const navigate = useNavigate();
 
@@ -12,7 +12,7 @@ export default function Profile() {
   const [notFound, setNotFound] = useState(false);
   const [completedQuests, setCompletedQuests] = useState(0);
   const [settingsOpen, setSettingsOpen] = useState(false);
-
+  const [walletModalOpen, setWalletModalOpen] = useState(false); // NEW
   // Fetch user and quests on mount
   const fetchUserAndCompletedQuests = async () => {
     try {
@@ -202,9 +202,37 @@ export default function Profile() {
               <span className="text-sm font-semibold">Connect X</span>
             </button>
           )}
-          <button className="px-6 py-2 w-48 text-sm font-medium rounded-full bg-white/70 hover:bg-white shadow">
-            Connect Wallet
-          </button>
+          {/* Connect Wallet Button */}
+{/* Wallet Connect / Display Button */}
+{user.wallet_address === "PLEASE CONNECT" ? (
+  <>
+    <button
+      onClick={() => setWalletModalOpen(true)}
+      className="flex items-center justify-center gap-2 w-48 sm:w-64 px-5 py-3 rounded-full bg-white/10 hover:bg-white/20 transition text-black font-medium shadow-lg backdrop-blur-md border border-white/40"
+    >
+      <span className="text-sm font-semibold">Connect Wallet</span>
+    </button>
+
+    {walletModalOpen && (
+      <ConnectWallet
+        onClose={() => setWalletModalOpen(false)}
+        onConnected={({ address, signature }) => {
+          console.log("Wallet connected:", address);
+          setWalletModalOpen(false);
+          updateUserStats();
+        }}
+      />
+    )}
+  </>
+) : (
+  <button
+    disabled
+    className="flex items-center justify-center gap-2 w-48 sm:w-64 px-5 py-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white/90 font-semibold shadow-md border border-white/20 cursor-default"
+  >
+    <span className="text-xs">🔗</span>
+    <span className="text-sm break-all">{user.wallet_address}</span>
+  </button>
+)}
         </div>
 
         {/* Generate AI Identity */}
