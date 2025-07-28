@@ -208,10 +208,14 @@ export default function FeaturedQuests() {
               onClick={() => navigate(`/quests/${quest.id}`)}
               className="aspect-[4/3] rounded-xl bg-white/50 border border-white/30 shadow-inner p-4 sm:p-6 flex flex-col justify-between hover:scale-[1.02] transition duration-300 ease-in-out cursor-pointer"
             >
-              <p className="text-base sm:text-xl font-semibold text-gray-800 leading-snug">
-                {quest.title || quest.description}
-              </p>
-
+             <div className="flex flex-col gap-1.5">
+  <p className="text-base sm:text-xl font-semibold text-gray-800 leading-snug">
+    {quest.title || quest.description}
+  </p>
+  <p className="text-[0.875rem] text-gray-600 leading-relaxed max-w-[90%]">
+    {quest.description}
+  </p>
+</div>
               {quest.project && (
                 <div className="flex justify-between items-end mt-auto">
                   <div

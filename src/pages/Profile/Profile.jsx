@@ -157,7 +157,9 @@ export default function Profile() {
               <div className="w-full h-3 bg-white/20 rounded-full backdrop-blur-sm relative overflow-hidden">
   <div
     className="h-full rounded-full bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-500 animate-pulse shadow-[0_0_10px_rgba(0,0,255,0.5)] transition-all duration-700"
-    style={{ width: "65%" }}
+    style={{
+      width: `${Math.min((completedQuests / 15) * 100, 100)}%`,
+    }}
   />
 </div>
             </div>
@@ -173,7 +175,9 @@ export default function Profile() {
               <div className="w-full h-3 bg-white/20 rounded-full backdrop-blur-sm relative overflow-hidden">
   <div
     className="h-full rounded-full bg-gradient-to-r from-purple-400 via-indigo-500 to-blue-500 animate-pulse shadow-[0_0_10px_rgba(100,0,255,0.5)] transition-all duration-700"
-    style={{ width: `${user.xp || 0}%` }}
+    style={{
+  width: `${Math.min((user.xp / 2500) * 100, 100)}%`,
+}}
   />
 </div>
             </div></TiltCard>
