@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-
+import xLogo from "../assets/xLogo.svg";
 export default function LoginModal() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -33,14 +33,21 @@ export default function LoginModal() {
           >
             ×
           </button>
-          <h3 className="text-xl font-semibold text-gray-800">Login to GLARIA</h3>
-          <button
-            className="w-full py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"
-            onClick={handleXLogin}
-            disabled={loading}
-          >
-            Login using X
-          </button>
+          <h3 className="text-xl font-semibold text-gray-800">
+  Login to{" "}
+  <span className="text-blue-500 drop-shadow-[0_0_6px_rgba(59,130,246,0.8)]">
+    GLARIA
+  </span>
+</h3>
+
+<button
+  onClick={handleXLogin}
+  disabled={loading}
+  className="w-full py-2 px-4 rounded-full bg-black text-white flex items-center justify-center space-x-2 backdrop-blur-md border border-white/20 hover:bg-black/90 transition"
+>
+  <span className="text-sm font-medium tracking-wide">Connect</span>
+  <img src={xLogo} alt="X Logo" className="w-5 h-5 invert" />
+</button>
           
         </div>
       </div>

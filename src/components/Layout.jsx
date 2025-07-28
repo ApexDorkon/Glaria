@@ -4,6 +4,7 @@ import GlariaLogo from "../assets/glariacircle.png";
 import SignupModal from "../components/SignupModal";
 import ConnectWallet from "../components/ConnectWallet";
 import { ethers } from "ethers";
+import xLogo from "../assets/xLogo.svg"; // adjust path as needed
 import dummyPP from "../assets/glassMan.png"; // Placeholder profile picture
 export default function Layout({ children }) {
   const navigate = useNavigate();
@@ -311,14 +312,28 @@ useEffect(() => {
             >
               ×
             </button>
-            <h3 className="text-xl font-semibold text-gray-800">Login to GLARIA</h3>
-            <button
-              className="w-full py-2 bg-black text-white rounded-full hover:bg-gray-900 transition"
-              onClick={handleXLogin}
-            >
-              Login using X
-            </button>
-            
+            <h3 className="text-xl font-semibold text-gray-800">
+  Login to <span className="text-blue-500 drop-shadow-[0_0_6px_rgba(59,130,246,0.8)]">GLARIA</span>
+</h3>
+           
+
+<button
+  onClick={handleXLogin}
+  className="
+    w-full py-2 px-4
+    rounded-full
+    flex items-center justify-center gap-2
+    text-white text-base font-semibold
+    bg-black backdrop-blur-md
+    border border-white/20
+    shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]
+    hover:bg-black/80 hover:shadow-[inset_0_2px_4px_rgba(255,255,255,0.25)]
+    transition-all duration-200
+  "
+>
+  <span>Connect</span>
+  <img src={xLogo} alt="X Logo" className="w-5 h-5 invert" />
+</button>
           </div>
         </div>
       )}
