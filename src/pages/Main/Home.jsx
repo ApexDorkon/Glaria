@@ -1,6 +1,7 @@
 import '../../index.css';
 import Hero from '../../components/Hero';
 import FeaturedQuests from '../../components/FeaturedQuests';
+import TiltCard from '../../components/TiltCard';
 import News from '../../components/News';
 import Leaderboard from '../../components/Leaderboard';  // Import your leaderboard
 import { motion, useAnimation } from 'framer-motion';

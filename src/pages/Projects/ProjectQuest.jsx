@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import LoginModal from "../../components/LoginModal"; 
+import TiltCard from "../../components/TiltCard"; 
 export default function ProjectQuest() {
   const { questId } = useParams();
   const navigate = useNavigate();
@@ -380,6 +381,7 @@ const [showLoginModal, setShowLoginModal] = useState(false);
   </button>
 
   <div className="flex gap-10 items-start flex-col md:flex-row">
+    <TiltCard>
     <div className="flex-1 bg-white/30 backdrop-blur-lg p-8 rounded-3xl border border-white/40 shadow-md">
       <h2 className="text-3xl font-bold mb-4">{quest.title}</h2>
       <p className="text-lg leading-relaxed text-black/80">{quest.description}</p>
@@ -387,16 +389,16 @@ const [showLoginModal, setShowLoginModal] = useState(false);
       {/* XP Indicators */}
       <div className="xp-indicators">
         <div className="xp-pill">
-          <span className="label">Glaria XP:</span>
+          <span className="label">Glaria XP</span>
           <span className="value">{xpInfo.points}</span>
         </div>
         <div className="xp-pill">
-          <span className="label">{quest?.project?.name || "Project"} XP:</span>
+          <span className="label">{quest?.project?.name || "Project"} XP</span>
           <span className="value">{xpInfo.project_points}</span>
         </div>
       </div>
     </div>
-
+</TiltCard>
     <div
       className="w-full md:w-[320px] relative rounded-3xl border border-white/40 shadow-md bg-white/30 backdrop-blur-lg p-6 flex flex-col gap-6"
       style={{ pointerEvents: collected ? "none" : "auto" }}
@@ -471,7 +473,7 @@ const [showLoginModal, setShowLoginModal] = useState(false);
             : "Claim"
         }
       >
-         {collected ? "Claimed" : allActionsDone ? "Claim" : `Collect ${xpInfo.points} XP`}
+         {collected ? "Claimed" : allActionsDone ? "Claim" : `Claim`}
       </button>
 
       {collectError && <p className="collect-error">{collectError}</p>}

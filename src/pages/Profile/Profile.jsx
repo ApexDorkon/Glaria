@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import GlariaQuests from "../Quests/GlariaQuests";
 import LoginModal from "../../components/LoginModal";
 import ConnectWallet from "../../components/ConnectWallet";
+import TiltCard from "../../components/TiltCard"; // adjust path
 export default function Profile() {
   const navigate = useNavigate();
 
@@ -147,32 +148,35 @@ export default function Profile() {
           {/* Stats Section */}
           <div className="flex flex-col sm:flex-row lg:flex-col justify-center gap-8 w-full lg:w-auto">
             {/* Completed Quests */}
+            <TiltCard>
             <div className="min-w-[280px] sm:min-w-[380px] lg:min-w-[480px] rounded-3xl bg-white/10 backdrop-blur-lg border border-white/50 shadow-2xl p-6">
               <p className="text-center font-semibold text-xl">Completed Quests</p>
               <p className="text-center text-4xl font-bold mt-2 mb-4 text-black/90">
                 {completedQuests}
               </p>
-              <div className="w-full h-3 bg-white/30 rounded-full overflow-hidden">
-                <div
-                  className="h-3 bg-blue-400/80 rounded-full"
-                  style={{ width: "65%" }}
-                />
-              </div>
+              <div className="w-full h-3 bg-white/20 rounded-full backdrop-blur-sm relative overflow-hidden">
+  <div
+    className="h-full rounded-full bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-500 animate-pulse shadow-[0_0_10px_rgba(0,0,255,0.5)] transition-all duration-700"
+    style={{ width: "65%" }}
+  />
+</div>
             </div>
+            </TiltCard>
 
             {/* GLARIA XP */}
+            <TiltCard>
             <div className="min-w-[280px] sm:min-w-[380px] lg:min-w-[480px] rounded-3xl bg-white/10 backdrop-blur-lg border border-white/50 shadow-2xl p-6">
               <p className="text-center font-semibold text-xl">GLARIA XP</p>
               <p className="text-center text-4xl font-bold mt-2 mb-4 text-black/90">
                 {user.xp || 0}
               </p>
-              <div className="w-full h-3 bg-white/30 rounded-full overflow-hidden">
-                <div
-                  className="h-3 bg-indigo-400/80 rounded-full"
-                  style={{ width: `${user.xp || 0}%` }}
-                />
-              </div>
-            </div>
+              <div className="w-full h-3 bg-white/20 rounded-full backdrop-blur-sm relative overflow-hidden">
+  <div
+    className="h-full rounded-full bg-gradient-to-r from-purple-400 via-indigo-500 to-blue-500 animate-pulse shadow-[0_0_10px_rgba(100,0,255,0.5)] transition-all duration-700"
+    style={{ width: `${user.xp || 0}%` }}
+  />
+</div>
+            </div></TiltCard>
           </div>
         </div>
 
