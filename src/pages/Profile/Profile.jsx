@@ -117,8 +117,9 @@ export default function Profile() {
               alt="Avatar"
               className="w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 rounded-full border-4 border-white shadow-xl"
             />
-            <p className="text-lg font-semibold text-gray-900 select-text">{user.username}</p>
-
+<p className="mt-4 text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight drop-shadow select-text">
+  {user.username}
+</p>
             {/* Settings Button */}
             <button
               onClick={() => setSettingsOpen(!settingsOpen)}
