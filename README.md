@@ -1,7 +1,7 @@
 # Glaria
 
 <p align="center">
-  <img src="assets/ProjectGlaria.png" alt="Project Overview" width="600"/>
+  <img src="/glaria/src/assets/GlariaOver.png" alt="Project Overview" width="600"/>
 </p>
 
 Glaria is a **Web3-native creator economy platform** built on the **Sophon network**.  
@@ -29,12 +29,12 @@ It empowers creators, communities, and projects to connect wallets, complete que
 
 ### Project View
 <p align="center">
-  <img src="assets/ProjectGlaria.png" alt="Project Glaria Screenshot" width="700"/>
+  <img src="/glaria/src/assets/ProjectGlaria.png" alt="Project Glaria Screenshot" width="700"/>
 </p>
 
 ### User View
 <p align="center">
-  <img src="assets/UserGlaria.png" alt="User Glaria Screenshot" width="700"/>
+  <img src="/glaria/src/assets/UserGlaria.png" alt="User Glaria Screenshot" width="700"/>
 </p>
 
 ---
