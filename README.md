@@ -1,12 +1,43 @@
-# React + Vite
+# Glaria
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<p align="center">
+  <img src="assets/ProjectGlaria.png" alt="Project Overview" width="600"/>
+</p>
 
-Currently, two official plugins are available:
+Glaria is a **Web3-native creator economy platform** built on the **Sophon network**.  
+It empowers creators, communities, and projects to connect wallets, complete quests, earn XP, and mint **AI-generated NFTs** — all while building transparent on-chain reputations.  
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## ✨ Features
+- 🔗 **Wallet + X (Twitter) login** for seamless onboarding  
+- 🎯 **Quest system** with XP rewards  
+- 🖼 **AI-generated NFTs** as unique identity markers  
+- 🏆 **Leaderboard** to showcase top contributors  
+- 📊 **Project discovery page** for finding and engaging with initiatives  
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 🚀 Tech Stack
+- **Frontend:** React + Vite  
+- **Backend:** FastAPI + PostgreSQL  
+- **Smart Contracts:** Solidity (Sophon Network)  
+
+---
+
+## 📸 Platform Preview
+
+### Project View
+<p align="center">
+  <img src="assets/ProjectGlaria.png" alt="Project Glaria Screenshot" width="700"/>
+</p>
+
+### User View
+<p align="center">
+  <img src="assets/UserGlaria.png" alt="User Glaria Screenshot" width="700"/>
+</p>
+
+---
+
+## 📖 License
+This project is licensed under the **MIT License**.
